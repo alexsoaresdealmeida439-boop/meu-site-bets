@@ -1,6 +1,13 @@
 
+// script.js — Cole este arquivo no GitHub substituindo o anterior
+
+/* === CONFIG === */
+// (a API_KEY não é necessária para seu fluxo; mantive variável caso queira usar depois)
 const API_KEY = "23b89636f57128671e479701eaad2a37";
 
+/* =========================
+   CLASSE PRINCIPAL — ORIGINAL (melhorada)
+   ========================= */
 class ProfessionalBetManager {
     constructor() {
         this.games = new Map();
@@ -11,33 +18,42 @@ class ProfessionalBetManager {
     }
 
     init() {
-        this.loadTodayGames();
+        // Tenta carregar dados externos, mas não trava a UI se falhar
+        this.loadTodayGames().catch(()=>{});
         this.setupEventListeners();
-        this.loadChampionships();
+        this.loadChampionships().catch(()=>{});
         setInterval(() => this.updateLiveGames(), 30000);
         this.showWelcomeView();
     }
 
     async loadTodayGames() {
+        // Tenta carregar via API, mas se falhar, prossegue sem travar
         try {
             const today = new Date().toISOString().split('T')[0];
+            // Se não quiser requisição externa, comente o fetch abaixo
             const response = await fetch(
                 `https://v3.football.api-sports.io/fixtures?date=${today}&timezone=America/Sao_Paulo`,
                 {
                     headers: {
                         'x-apisports-key': API_KEY,
                         'x-rapidapi-host': 'v3.football.api-sports.io'
-                    }
+                    },
+                    // evita travar indefinidamente
+                    signal: (new AbortController()).signal
                 }
             );
-            
+
+            // Se resposta inválida ou bloqueada, cai no catch
             const data = await response.json();
-            
-            if (data.response) {
+            if (data && data.response) {
                 this.processGames(data.response, today);
+            } else {
+                // sem dados externos — continua com o que tem no storage
+                this.renderCurrentView();
             }
         } catch (error) {
-            console.error('Erro ao carregar jogos:', error);
+            // erro de fetch / CORS / chave inválida -> seguir com dados locais
+            console.warn('loadTodayGames: não foi possível buscar da API (seguindo com local).', error);
             this.renderCurrentView();
         }
     }
@@ -45,7 +61,7 @@ class ProfessionalBetManager {
     processGames(apiGames, date) {
         apiGames.forEach(game => {
             const gameId = game.fixture.id.toString();
-            
+
             if (!this.games.has(gameId)) {
                 const gameData = {
                     id: gameId,
@@ -63,16 +79,15 @@ class ProfessionalBetManager {
                     statusElapsed: game.fixture.status.elapsed,
                     fixtureDate: game.fixture.date
                 };
-                
+
                 this.games.set(gameId, gameData);
             } else {
-                // Atualizar status dos jogos existentes
                 const existingGame = this.games.get(gameId);
                 existingGame.status = game.fixture.status.short;
                 existingGame.statusElapsed = game.fixture.status.elapsed;
             }
         });
-        
+
         this.cleanOldGames();
         this.saveToStorage();
         this.updateLiveGames();
@@ -85,20 +100,18 @@ class ProfessionalBetManager {
 
     formatTime(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
+        return date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
             minute: '2-digit',
             timeZone: 'America/Sao_Paulo'
         });
     }
 
     cleanOldGames() {
-        const now = new Date().getTime();
-        
+        const now = Date.now();
         for (let [gameId, game] of this.games) {
             const gameTime = game.timestamp;
             const gameFinished = gameTime < (now - (3 * 60 * 60 * 1000));
-            
             if (gameFinished && game.apostei === "N") {
                 this.games.delete(gameId);
             }
@@ -106,13 +119,14 @@ class ProfessionalBetManager {
     }
 
     setupEventListeners() {
-        // Event listeners para futuras implementações
+        // reservado para futuras integrações (ex: botões)
     }
 
-    // SISTEMA DE NAVEGAÇÃO
     showWelcomeView() {
-        document.getElementById('welcomeSection').style.display = 'flex';
-        document.getElementById('currentFolder').style.display = 'none';
+        const ws = document.getElementById('welcomeSection');
+        const cf = document.getElementById('currentFolder');
+        if (ws) ws.style.display = 'flex';
+        if (cf) cf.style.display = 'none';
         this.currentView = 'welcome';
     }
 
@@ -142,13 +156,14 @@ class ProfessionalBetManager {
     }
 
     showFolderView() {
-        document.getElementById('welcomeSection').style.display = 'none';
-        document.getElementById('currentFolder').style.display = 'block';
+        const ws = document.getElementById('welcomeSection');
+        const cf = document.getElementById('currentFolder');
+        if (ws) ws.style.display = 'none';
+        if (cf) cf.style.display = 'block';
     }
 
     renderCurrentView() {
         const gamesArray = Array.from(this.games.values());
-        
         if (gamesArray.length === 0) {
             this.renderFolderContent([], 'Nenhum jogo encontrado');
             return;
@@ -158,48 +173,57 @@ class ProfessionalBetManager {
         let title = '';
 
         switch (this.currentView) {
-            case 'today':
+            case 'today': {
                 const today = new Date().toISOString().split('T')[0];
                 filteredGames = gamesArray.filter(game => game.originalDate === today);
                 title = 'JOGOS DE HOJE';
                 break;
-            case 'year':
+            }
+            case 'year': {
                 filteredGames = gamesArray.filter(game => {
                     const year = new Date(game.timestamp).getFullYear();
                     return year === this.currentPath[0];
                 });
                 title = `ANO ${this.currentPath[0]}`;
                 break;
-            case 'month':
+            }
+            case 'month': {
                 filteredGames = gamesArray.filter(game => {
                     const date = new Date(game.timestamp);
-                    return date.getFullYear() === this.currentPath[0] && 
-                           date.getMonth() === this.currentPath[1];
+                    return date.getFullYear() === this.currentPath[0] &&
+                        date.getMonth() === this.currentPath[1];
                 });
                 title = `${this.getMonthName(this.currentPath[1])} ${this.currentPath[0]}`;
                 break;
-            case 'day':
+            }
+            case 'day': {
                 filteredGames = gamesArray.filter(game => {
                     const date = new Date(game.timestamp);
-                    return date.getFullYear() === this.currentPath[0] && 
-                           date.getMonth() === this.currentPath[1] &&
-                           date.getDate() === this.currentPath[2];
+                    return date.getFullYear() === this.currentPath[0] &&
+                        date.getMonth() === this.currentPath[1] &&
+                        date.getDate() === this.currentPath[2];
                 });
                 title = this.getDayTitle(filteredGames[0]?.originalDate);
                 break;
-            case 'championship':
+            }
+            case 'championship': {
                 filteredGames = gamesArray.filter(game => game.leagueId === this.currentPath[0]);
                 title = this.currentPath[1] || 'CAMPEONATO';
                 break;
+            }
+            default:
+                filteredGames = gamesArray;
         }
 
-        document.getElementById('folderTitle').textContent = title;
+        const folderTitle = document.getElementById('folderTitle');
+        if (folderTitle) folderTitle.textContent = title;
         this.renderFolderContent(filteredGames);
     }
 
     renderFolderContent(games, emptyMessage = 'Nenhum jogo nesta pasta') {
         const container = document.getElementById('folderContent');
-        
+        if (!container) return;
+
         if (games.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -210,16 +234,15 @@ class ProfessionalBetManager {
             return;
         }
 
-        // Ordenar jogos por horário
         games.sort((a, b) => a.timestamp - b.timestamp);
-        
         container.innerHTML = games.map(game => this.createGameCard(game)).join('');
     }
 
     renderPeriodFolders() {
         const container = document.getElementById('periodFolders');
+        if (!container) return;
         const gamesArray = Array.from(this.games.values());
-        
+
         if (gamesArray.length === 0) {
             container.innerHTML = `
                 <div class="empty-folders">
@@ -233,7 +256,7 @@ class ProfessionalBetManager {
         let foldersHTML = '';
 
         switch (this.currentView) {
-            case 'yearly':
+            case 'yearly': {
                 const years = this.getUniqueYears(gamesArray);
                 foldersHTML = years.map(year => `
                     <div class="period-folder" onclick="betManager.openYear(${year})">
@@ -242,8 +265,8 @@ class ProfessionalBetManager {
                     </div>
                 `).join('');
                 break;
-            
-            case 'monthly':
+            }
+            case 'monthly': {
                 const months = this.getUniqueMonths(gamesArray);
                 foldersHTML = months.map(month => `
                     <div class="period-folder" onclick="betManager.openMonth(${month.year}, ${month.month})">
@@ -252,8 +275,8 @@ class ProfessionalBetManager {
                     </div>
                 `).join('');
                 break;
-            
-            case 'daily':
+            }
+            case 'daily': {
                 const days = this.getUniqueDays(gamesArray);
                 foldersHTML = days.map(day => `
                     <div class="period-folder" onclick="betManager.openDay(${day.year}, ${day.month}, ${day.day})">
@@ -262,12 +285,12 @@ class ProfessionalBetManager {
                     </div>
                 `).join('');
                 break;
+            }
         }
 
         container.innerHTML = foldersHTML;
     }
 
-    // Métodos de navegação
     openYear(year) {
         this.currentView = 'year';
         this.currentPath = [year];
@@ -292,7 +315,6 @@ class ProfessionalBetManager {
         this.renderCurrentView();
     }
 
-    // Métodos auxiliares
     getUniqueYears(games) {
         const years = new Set();
         games.forEach(game => {
@@ -309,13 +331,13 @@ class ProfessionalBetManager {
             const year = date.getFullYear();
             const month = date.getMonth();
             const key = `${year}-${month}`;
-            
+
             if (!months.has(key)) {
                 months.set(key, { year, month, count: 0 });
             }
             months.get(key).count++;
         });
-        return Array.from(months.values()).sort((a, b) => 
+        return Array.from(months.values()).sort((a, b) =>
             b.year - a.year || b.month - a.month
         );
     }
@@ -328,13 +350,13 @@ class ProfessionalBetManager {
             const month = date.getMonth();
             const day = date.getDate();
             const key = `${year}-${month}-${day}`;
-            
+
             if (!days.has(key)) {
                 days.set(key, { year, month, day, dateString: game.originalDate, count: 0 });
             }
             days.get(key).count++;
         });
-        return Array.from(days.values()).sort((a, b) => 
+        return Array.from(days.values()).sort((a, b) =>
             b.year - a.year || b.month - a.month || b.day - a.day
         );
     }
@@ -355,19 +377,19 @@ class ProfessionalBetManager {
         const date = new Date(dateString);
         const today = new Date().toISOString().split('T')[0];
         const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        
+
         if (dateString === today) return 'HOJE';
         if (dateString === yesterday) return 'ONTEM';
-        
-        return date.toLocaleDateString('pt-BR', { 
+
+        return date.toLocaleDateString('pt-BR', {
             weekday: 'short',
             day: '2-digit',
             month: '2-digit'
         }).toUpperCase();
     }
 
-    // CAMPEONATOS
     async loadChampionships() {
+        // tenta buscar campeonatos, mas não trava a interface caso falhe
         try {
             const response = await fetch(
                 'https://v3.football.api-sports.io/leagues?current=true',
@@ -375,25 +397,27 @@ class ProfessionalBetManager {
                     headers: {
                         'x-apisports-key': API_KEY,
                         'x-rapidapi-host': 'v3.football.api-sports.io'
-                    }
+                    },
+                    signal: (new AbortController()).signal
                 }
             );
-            
             const data = await response.json();
-            
-            if (data.response) {
+            if (data && data.response) {
                 this.renderChampionships(data.response.slice(0, 12));
+            } else {
+                this.renderChampionships([]);
             }
         } catch (error) {
-            console.error('Erro ao carregar campeonatos:', error);
+            console.warn('loadChampionships: falha ao buscar (seguindo com vazio).', error);
             this.renderChampionships([]);
         }
     }
 
     renderChampionships(leagues) {
         const container = document.getElementById('championshipsGrid');
-        
-        if (leagues.length === 0) {
+        if (!container) return;
+
+        if (!leagues || leagues.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">🏆</div>
@@ -413,24 +437,24 @@ class ProfessionalBetManager {
         container.innerHTML = championshipsHTML;
     }
 
-    // JOGOS EM ANDAMENTO - CORRIGIDO
     updateLiveGames() {
         const container = document.getElementById('liveGames');
+        if (!container) return;
         const gamesArray = Array.from(this.games.values());
-        
+
         const liveGames = gamesArray.filter(game => {
             const now = new Date();
             const gameTime = new Date(game.fixtureDate);
             const timeDiff = (now - gameTime) / (1000 * 60);
-            
-            return game.status === '1H' || 
-                   game.status === '2H' || 
-                   game.status === 'HT' || 
-                   game.status === 'ET' ||
-                   game.status === 'P' ||
-                   game.status === 'BT' ||
-                   game.status === 'LIVE' ||
-                   (timeDiff >= -15 && timeDiff <= 180);
+
+            return game.status === '1H' ||
+                game.status === '2H' ||
+                game.status === 'HT' ||
+                game.status === 'ET' ||
+                game.status === 'P' ||
+                game.status === 'BT' ||
+                game.status === 'LIVE' ||
+                (timeDiff >= -15 && timeDiff <= 180);
         }).slice(0, 5);
 
         if (liveGames.length === 0) {
@@ -438,11 +462,11 @@ class ProfessionalBetManager {
                 <div class="no-live-games">
                     <div class="empty-state">
                         <div class="empty-icon">⏰</div>
-                    <h3>Nenhum jogo ao vivo</h3>
-                    <p>Os jogos em andamento aparecerão aqui automaticamente</p>
-                    <div class="live-pulse"></div>
+                        <h3>Nenhum jogo ao vivo</h3>
+                        <p>Os jogos em andamento aparecerão aqui automaticamente</p>
+                        <div class="live-pulse"></div>
+                    </div>
                 </div>
-            </div>
             `;
             return;
         }
@@ -450,7 +474,7 @@ class ProfessionalBetManager {
         const liveHTML = liveGames.map(game => {
             let statusText = '🔜 PRÓXIMO';
             let statusClass = 'upcoming';
-            
+
             if (game.status === '1H' || game.status === '2H' || game.status === 'LIVE') {
                 statusText = `🔥 AO VIVO ${game.statusElapsed || '0'}'`;
                 statusClass = 'live';
@@ -464,7 +488,7 @@ class ProfessionalBetManager {
                 statusText = '⏳ PÊNALTIS';
                 statusClass = 'penalties';
             }
-            
+
             return `
                 <div class="live-game-card ${statusClass}">
                     <div class="live-teams">${game.teams}</div>
@@ -526,26 +550,34 @@ class ProfessionalBetManager {
     }
 
     saveToStorage() {
-        const gamesArray = Array.from(this.games.entries());
-        localStorage.setItem('betGames', JSON.stringify(gamesArray));
+        try {
+            const gamesArray = Array.from(this.games.entries());
+            localStorage.setItem('betGames', JSON.stringify(gamesArray));
+        } catch (err) {
+            console.error('Erro ao salvar localStorage:', err);
+        }
     }
 
     loadFromStorage() {
-        const stored = localStorage.getItem('betGames');
-        if (stored) {
-            const gamesArray = JSON.parse(stored);
-            this.games = new Map(gamesArray);
+        try {
+            const stored = localStorage.getItem('betGames');
+            if (stored) {
+                const gamesArray = JSON.parse(stored);
+                this.games = new Map(gamesArray);
+            }
+        } catch (err) {
+            console.warn('loadFromStorage: dados inválidos ou inexistentes.', err);
+            this.games = new Map();
         }
     }
 }
 
-// -----------------------------
-// HELPERS E RECEPTOR (ADICIONADOS)
-// -----------------------------
+/* =========================
+   HELPERS E RECEPTOR PARA O APP (OCR -> SITE)
+   ========================= */
 
 /**
- * Normaliza nomes de times/jogos para comparação.
- * Converte " x " / " X " / " vs " para " vs " e remove espaços extras.
+ * Normaliza texto de times para comparação
  */
 function normalizeMatchText(text) {
     if (!text || typeof text !== 'string') return '';
@@ -558,58 +590,62 @@ function normalizeMatchText(text) {
 }
 
 /**
- * Parseia uma linha do formato:
- * "Time A x Time B | 1.70 / 2.40 / 5.30"
- * ou aceita objetos { teams, odds, time?, date? }
+ * Parseia uma linha ou objeto recebido do app/ocr
+ * Aceita formatos:
+ *  - "Time A x Time B | 1.70 / 2.40 / 5.30"
+ *  - objeto { teams: "...", odds: "1.70/2.40/5.30", time: "HH:MM" }
  */
 function parseInputItem(item) {
+    if (!item) return null;
+
     if (typeof item === 'string') {
         const parts = item.split('|');
         const teamsPart = parts[0] ? parts[0].trim() : '';
         const oddsPart = parts[1] ? parts[1].trim().replace(/\s+/g, ' ') : '';
-        // tenta extrair time se houver (último token com formato hh:mm)
         let time = null;
         const timeMatch = oddsPart.match(/(\d{1,2}:\d{2})/);
         if (timeMatch) time = timeMatch[1];
         return {
             teams: teamsPart,
-            odds: oddsPart,
+            odds: oddsPart.replace(/\s/g, ''),
             time: time || '--:--',
             date: new Date().toISOString().split('T')[0]
         };
     }
-    // objeto
-    return {
-        teams: item.teams || `${item.home || ''} vs ${item.away || ''}`.trim(),
-        odds: item.odds || (item.odds_home && item.odds_draw && item.odds_away ? `${item.odds_home}/${item.odds_draw}/${item.odds_away}` : '___/___/___'),
-        time: item.time || item.hour || '--:--',
-        date: item.date || new Date().toISOString().split('T')[0]
-    };
+
+    if (typeof item === 'object') {
+        return {
+            teams: item.teams || (item.home && item.away ? `${item.home} vs ${item.away}` : ''),
+            odds: item.odds ? String(item.odds) : (item.odds_home && item.odds_draw && item.odds_away ? `${item.odds_home}/${item.odds_draw}/${item.odds_away}` : '___/___/___'),
+            time: item.time || item.hour || '--:--',
+            date: item.date || new Date().toISOString().split('T')[0]
+        };
+    }
+
+    return null;
 }
 
 /**
- * Recebe lista de entradas (string grande com quebras de linha,
- * ou array de strings, ou array de objetos)
- * e atualiza/insere jogos no betManager.
+ * Recebe dados escaneados (string com quebras de linha, array de strings ou array de objetos)
+ * Atualiza jogos existentes de HOJE ou cria novos.
+ * Retorna objeto { updated, created }.
  */
 function receiveScannedData(input) {
+    if (!input) return { updated: 0, created: 0 };
+
     let items = [];
 
-    if (!input) return;
-
     if (typeof input === 'string') {
-        // texto com quebras de linha
         const lines = input.split('\n').map(l => l.trim()).filter(l => l);
-        items = lines.map(parseInputItem);
+        items = lines.map(parseInputItem).filter(Boolean);
     } else if (Array.isArray(input)) {
-        items = input.map(parseInputItem);
+        items = input.map(parseInputItem).filter(Boolean);
     } else if (typeof input === 'object') {
-        // único objeto
-        items = [parseInputItem(input)];
-    } else {
-        console.error('Formato de entrada inválido para receiveScannedData');
-        return;
+        const parsed = parseInputItem(input);
+        if (parsed) items = [parsed];
     }
+
+    if (items.length === 0) return { updated: 0, created: 0 };
 
     const today = new Date().toISOString().split('T')[0];
     let updated = 0;
@@ -617,26 +653,24 @@ function receiveScannedData(input) {
 
     items.forEach(it => {
         const normalizedReceived = normalizeMatchText(it.teams);
-
-        // procura entre jogos de hoje primeiro
         const jogosHoje = Array.from(betManager.games.values()).filter(g => g.originalDate === today);
 
-        // busca exata normalizada
+        // Busca exata normalizada
         let found = jogosHoje.find(g => normalizeMatchText(g.teams) === normalizedReceived);
 
-        // se não achar, tenta busca parcial (ignora pequenos detalhes)
+        // Busca parcial tolerante
         if (!found) {
             found = jogosHoje.find(g => normalizeMatchText(g.teams).includes(normalizedReceived) || normalizedReceived.includes(normalizeMatchText(g.teams)));
         }
 
         if (found) {
-            // atualiza odds e horário sem tocar nos outros campos
+            // atualiza odds e horário
             found.odds = it.odds || found.odds;
             if (it.time && it.time !== '--:--') found.time = it.time;
             betManager.saveToStorage();
             updated++;
         } else {
-            // cria novo jogo preservando estrutura usada no site
+            // cria novo jogo preservando estrutura
             const newId = Date.now().toString() + Math.floor(Math.random() * 1000);
             const novoJogo = {
                 id: newId,
@@ -660,32 +694,27 @@ function receiveScannedData(input) {
         }
     });
 
-    // Se o usuário estiver visualizando hoje, atualiza a tela
     if (betManager.currentView === 'today' || betManager.currentView === 'welcome' || betManager.currentView === '') {
         betManager.renderCurrentView();
     }
 
     console.log(`receiveScannedData: updated=${updated} created=${created}`);
-    // Retorno curto e claro para o app (via função se desejar)
     return { updated, created };
 }
 
-// Permite que o app chame window.receiveScannedData(...) diretamente
+// expõe função global para chamadas diretas do app/webview
 window.receiveScannedData = receiveScannedData;
 
-// Canal via postMessage (para WebView / app)
+// canal postMessage para WebView ou app
 window.addEventListener("message", (e) => {
     try {
         const data = e.data;
         if (!data) return;
-        // Aceita dois formatos: { type: 'SCANNED_GAMES', payload: ... } ou payload direto
-        if (data.type && data.type === "SCANNED_GAMES" && data.payload) {
+        if (data.type === "SCANNED_GAMES" && data.payload) {
             receiveScannedData(data.payload);
-        } else if (data.type && data.type === "SCANNED_TEXT" && data.payload) {
-            // texto bruto com linhas
+        } else if (data.type === "SCANNED_TEXT" && data.payload) {
             receiveScannedData(data.payload);
         } else {
-            // se app mandar array/obj direto via postMessage
             if (Array.isArray(data) || typeof data === 'string' || typeof data === 'object') {
                 receiveScannedData(data);
             }
@@ -695,8 +724,13 @@ window.addEventListener("message", (e) => {
     }
 }, false);
 
-// Também expõe função para debug manual no console:
-// ex: receiveScannedData("Flamengo x Santos | 1.70 / 3.20 / 5.50\nOutro x Outro | 2.00 / 3.00 / 4.00")
-
-// Inicializar o sistema
+/* =========================
+   INICIALIZAÇÃO FINAL
+   ========================= */
+// cria a instância — importante: apenas uma vez
 const betManager = new ProfessionalBetManager();
+
+// DEBUG: instruções rápidas para testar no console
+// receiveScannedData("Time 1 x Time 2 | 1.70 / 2.40 / 5.30\nTime 3 x Time 4 | 1.55 / 3.20 / 6.10")
+// OR
+// window.postMessage({ type: "SCANNED_TEXT", payload: "Time 1 x Time 2 | 1.70 / 2.40 / 5.30" }, "*");
