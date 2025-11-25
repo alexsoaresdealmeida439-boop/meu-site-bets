@@ -1,120 +1,67 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALXbet - Premium Betting Manager</title>
+    <title>Site de Apostas - Bet365 Style</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- BACKGROUND LUXUOSO -->
-    <div class="premium-bg"></div>
-    <div class="gold-overlay"></div>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">BET365 STYLE</div>
+            <div class="nav-links">
+                <a href="#">Início</a>
+                <a href="#">Ao Vivo</a>
+                <a href="#">Esportes</a>
+                <a href="#">Cadastrar</a>
+            </div>
+        </nav>
+    </header>
 
-    <div class="main-header">
-        <div class="logo-container">
-            <div class="logo-wrapper">
-                <h1 class="main-logo">ALX<span>BET</span></h1>
-                <div class="logo-subtitle">PREMIUM BETTING SUITE</div>
-            </div>
-            <div class="header-graphic">
-                <div class="graphic-element">🎰</div>
-                <div class="graphic-element">💰</div>
-                <div class="graphic-element">⚡</div>
-            </div>
-        </div>
-    </div>
+    <section class="hero">
+        <h1>APOSTAS AO VIVO</h1>
+        <p>As melhores odds do mercado</p>
+    </section>
 
-    <div class="dashboard">
-        <!-- COLUNA ESQUERDA - JOGOS EM ANDAMENTO -->
-        <div class="left-column">
-            <div class="section-title">
-                <div class="title-icon">🔥</div>
-                <h2>JOGOS AO VIVO</h2>
-            </div>
-            <div class="live-games-container">
-                <div class="live-games" id="liveGames">
-                    <div class="no-live-games">
-                        <div class="empty-state">
-                            <div class="empty-icon">⏰</div>
-                            <h3>Nenhum jogo ao vivo</h3>
-                            <p>Os jogos em andamento aparecerão aqui automaticamente</p>
-                            <div class="live-pulse"></div>
-                        </div>
-                    </div>
+    <section class="jogos-container">
+        <h2>JOGOS DE HOJE</h2>
+        <div class="jogos-grid">
+            <!-- Jogo 1 -->
+            <div class="jogo-card">
+                <div class="time">Flamengo x Palmeiras</div>
+                <div class="campeonato">Brasileirão Série A</div>
+                <div class="odds">
+                    <button class="odd-btn">1.85</button>
+                    <button class="odd-btn">3.40</button>
+                    <button class="odd-btn">2.10</button>
                 </div>
             </div>
-        </div>
+            
+            <!-- Jogo 2 -->
+            <div class="jogo-card">
+                <div class="time">Corinthians x São Paulo</div>
+                <div class="campeonato">Brasileirão Série A</div>
+                <div class="odds">
+                    <button class="odd-btn">2.20</button>
+                    <button class="odd-btn">3.10</button>
+                    <button class="odd-btn">2.80</button>
+                </div>
+            </div>
 
-        <!-- COLUNA CENTRAL - ÁREA PRINCIPAL -->
-        <div class="center-column">
-            <div class="welcome-section" id="welcomeSection">
-                <div class="hero-section">
-                    <div class="hero-content">
-                        <h3>CONTROLE TOTAL DAS SUAS APOSTAS</h3>
-                        <p>Sistema profissional de análise e gestão de betting</p>
-                        <button class="premium-btn" onclick="betManager.showTodayGames()">
-                            <span class="btn-icon">🎯</span>
-                            VER JOGOS DE HOJE
-                        </button>
-                    </div>
-                    <div class="hero-graphic">
-                        <div class="graphic-man">📱💵</div>
-                        <div class="money-stack">💰💰💰</div>
-                    </div>
-                </div>
-            </div>
-            <div class="current-folder" id="currentFolder" style="display: none;">
-                <div class="folder-header">
-                    <h2 id="folderTitle">HOJE</h2>
-                    <div class="folder-actions">
-                        <button class="back-btn" onclick="betManager.showWelcomeView()">← Voltar</button>
-                    </div>
-                </div>
-                <div class="folder-content" id="folderContent"></div>
-            </div>
-        </div>
-
-        <!-- COLUNA DIREITA - PERÍODO -->
-        <div class="right-column">
-            <div class="section-title">
-                <div class="title-icon">📊</div>
-                <h2>PERÍODO</h2>
-            </div>
-            <div class="period-nav">
-                <div class="period-btn" onclick="betManager.showYearlyFolders()">
-                    <span>ANO</span>
-                </div>
-                <div class="period-btn" onclick="betManager.showMonthlyFolders()">
-                    <span>MÊS</span>
-                </div>
-                <div class="period-btn" onclick="betManager.showDailyFolders()">
-                    <span>DIA</span>
-                </div>
-            </div>
-            <div class="folders-container" id="periodFolders">
-                <div class="empty-folders">
-                    <div class="folder-icon">📁</div>
-                    <p>Selecione um período</p>
+            <!-- Jogo 3 -->
+            <div class="jogo-card">
+                <div class="time">Real Madrid x Barcelona</div>
+                <div class="campeonato">La Liga</div>
+                <div class="odds">
+                    <button class="odd-btn">1.95</button>
+                    <button class="odd-btn">3.50</button>
+                    <button class="odd-btn">3.80</button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- ÁREA DE CAMPEONATOS -->
-    <div class="championships-section">
-        <div class="section-header">
-            <div class="title-icon">🏆</div>
-            <h2>CAMPEONATOS PREMIUM</h2>
-        </div>
-        <div class="championships-grid" id="championshipsGrid">
-            <div class="loading-championships">
-                <div class="loading-spinner"></div>
-                <p>Carregando campeonatos...</p>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <script src="script.js"></script>
 </body>
