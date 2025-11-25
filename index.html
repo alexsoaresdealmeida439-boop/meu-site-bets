@@ -3,22 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bloco de Apostas Profissional</title>
+    <title>ALXbet - Professional Betting Manager</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📊 Bloco de Apostas</h1>
+            <div class="logo">
+                <h1>ALX<span>bet</span></h1>
+                <div class="tagline">Professional Betting Manager</div>
+            </div>
             <div class="date-display" id="currentDate"></div>
         </header>
 
         <div class="controls">
-            <input type="text" id="searchInput" placeholder="🔍 Buscar jogos...">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="🔍 Search matches...">
+            </div>
         </div>
 
         <div class="folder-structure" id="folderStructure">
-            <!-- Pastas Ano/Mês/Dia serão carregadas aqui -->
+            <div class="loading">Carregando jogos...</div>
         </div>
     </div>
 
