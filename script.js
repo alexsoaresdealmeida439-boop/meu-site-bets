@@ -4,7 +4,7 @@ const API_KEY = "23b89636f57128671e479701eaad2a37";
 class ProfessionalBetManager {
     constructor() {
         this.games = new Map();
-        this.currentView = 'today';
+        this.currentView = 'welcome';
         this.currentPath = [];
         this.loadFromStorage();
         this.init();
@@ -13,8 +13,9 @@ class ProfessionalBetManager {
     init() {
         this.loadTodayGames();
         this.setupEventListeners();
-        this.showTodayGames();
         this.loadChampionships();
+        setInterval(() => this.updateLiveGames(), 30000);
+        this.showWelcomeView();
     }
 
     async loadTodayGames() {
@@ -58,16 +59,22 @@ class ProfessionalBetManager {
                     acertei: "N",
                     timestamp: new Date(game.fixture.date).getTime(),
                     originalDate: date,
-                    status: game.fixture.status.short
+                    status: game.fixture.status.short,
+                    statusElapsed: game.fixture.status.elapsed,
+                    fixtureDate: game.fixture.date
                 };
                 
                 this.games.set(gameId, gameData);
+            } else {
+                // Atualizar status dos jogos existentes
+                const existingGame = this.games.get(gameId);
+                existingGame.status = game.fixture.status.short;
+                existingGame.statusElapsed = game.fixture.status.elapsed;
             }
         });
         
         this.cleanOldGames();
         this.saveToStorage();
-        this.renderCurrentView();
         this.updateLiveGames();
     }
 
@@ -90,7 +97,7 @@ class ProfessionalBetManager {
         
         for (let [gameId, game] of this.games) {
             const gameTime = game.timestamp;
-            const gameFinished = gameTime < (now - (2 * 60 * 60 * 1000));
+            const gameFinished = gameTime < (now - (3 * 60 * 60 * 1000));
             
             if (gameFinished && game.apostei === "N") {
                 this.games.delete(gameId);
@@ -99,29 +106,44 @@ class ProfessionalBetManager {
     }
 
     setupEventListeners() {
-        // Event listeners serão adicionados aqui
+        // Event listeners para futuras implementações
     }
 
-    // SISTEMA DE NAVEGAÇÃO BONECA RUSSA
+    // SISTEMA DE NAVEGAÇÃO
+    showWelcomeView() {
+        document.getElementById('welcomeSection').style.display = 'flex';
+        document.getElementById('currentFolder').style.display = 'none';
+        this.currentView = 'welcome';
+    }
+
     showTodayGames() {
         this.currentView = 'today';
         this.currentPath = [];
+        this.showFolderView();
         this.renderCurrentView();
     }
 
     showYearlyFolders() {
         this.currentView = 'yearly';
+        this.showFolderView();
         this.renderPeriodFolders();
     }
 
     showMonthlyFolders() {
         this.currentView = 'monthly';
+        this.showFolderView();
         this.renderPeriodFolders();
     }
 
     showDailyFolders() {
         this.currentView = 'daily';
+        this.showFolderView();
         this.renderPeriodFolders();
+    }
+
+    showFolderView() {
+        document.getElementById('welcomeSection').style.display = 'none';
+        document.getElementById('currentFolder').style.display = 'block';
     }
 
     renderCurrentView() {
@@ -139,7 +161,7 @@ class ProfessionalBetManager {
             case 'today':
                 const today = new Date().toISOString().split('T')[0];
                 filteredGames = gamesArray.filter(game => game.originalDate === today);
-                title = 'HOJE';
+                title = 'JOGOS DE HOJE';
                 break;
             case 'year':
                 filteredGames = gamesArray.filter(game => {
@@ -167,7 +189,7 @@ class ProfessionalBetManager {
                 break;
             case 'championship':
                 filteredGames = gamesArray.filter(game => game.leagueId === this.currentPath[0]);
-                title = this.currentPath[1] || 'Campeonato';
+                title = this.currentPath[1] || 'CAMPEONATO';
                 break;
         }
 
@@ -179,10 +201,18 @@ class ProfessionalBetManager {
         const container = document.getElementById('folderContent');
         
         if (games.length === 0) {
-            container.innerHTML = `<div class="loading">${emptyMessage}</div>`;
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📁</div>
+                    <h3>${emptyMessage}</h3>
+                </div>
+            `;
             return;
         }
 
+        // Ordenar jogos por horário
+        games.sort((a, b) => a.timestamp - b.timestamp);
+        
         container.innerHTML = games.map(game => this.createGameCard(game)).join('');
     }
 
@@ -191,7 +221,12 @@ class ProfessionalBetManager {
         const gamesArray = Array.from(this.games.values());
         
         if (gamesArray.length === 0) {
-            container.innerHTML = '<div class="loading">Nenhum jogo salvo</div>';
+            container.innerHTML = `
+                <div class="empty-folders">
+                    <div class="folder-icon">📁</div>
+                    <p>Nenhum jogo salvo</p>
+                </div>
+            `;
             return;
         }
 
@@ -347,18 +382,29 @@ class ProfessionalBetManager {
             const data = await response.json();
             
             if (data.response) {
-                this.renderChampionships(data.response.slice(0, 12)); // Top 12 campeonatos
+                this.renderChampionships(data.response.slice(0, 12));
             }
         } catch (error) {
             console.error('Erro ao carregar campeonatos:', error);
+            this.renderChampionships([]);
         }
     }
 
     renderChampionships(leagues) {
         const container = document.getElementById('championshipsGrid');
         
+        if (leagues.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🏆</div>
+                    <h3>Nenhum campeonato encontrado</h3>
+                </div>
+            `;
+            return;
+        }
+
         const championshipsHTML = leagues.map(league => `
-            <div class="championship-card" onclick="betManager.openChampionship(${league.league.id}, '${league.league.name}')">
+            <div class="championship-card" onclick="betManager.openChampionship(${league.league.id}, '${league.league.name.replace(/'/g, "\\'")}')">
                 <div class="championship-name">${league.league.name}</div>
                 <div class="championship-country">${league.country.name}</div>
             </div>
@@ -367,27 +413,66 @@ class ProfessionalBetManager {
         container.innerHTML = championshipsHTML;
     }
 
-    // JOGOS EM ANDAMENTO
+    // JOGOS EM ANDAMENTO - CORRIGIDO
     updateLiveGames() {
         const container = document.getElementById('liveGames');
         const gamesArray = Array.from(this.games.values());
         
-        const liveGames = gamesArray.filter(game => 
-            game.status === '1H' || game.status === '2H' || game.status === 'HT' || game.status === 'LIVE'
-        ).slice(0, 5); // Mostrar apenas 5 jogos ao vivo
+        const liveGames = gamesArray.filter(game => {
+            const now = new Date();
+            const gameTime = new Date(game.fixtureDate);
+            const timeDiff = (now - gameTime) / (1000 * 60);
+            
+            return game.status === '1H' || 
+                   game.status === '2H' || 
+                   game.status === 'HT' || 
+                   game.status === 'ET' ||
+                   game.status === 'P' ||
+                   game.status === 'BT' ||
+                   game.status === 'LIVE' ||
+                   (timeDiff >= -15 && timeDiff <= 180);
+        }).slice(0, 5);
 
         if (liveGames.length === 0) {
-            container.innerHTML = '<div class="loading">Nenhum jogo em andamento</div>';
+            container.innerHTML = `
+                <div class="no-live-games">
+                    <div class="empty-state">
+                        <div class="empty-icon">⏰</div>
+                        <h3>Nenhum jogo ao vivo</h3>
+                        <p>Os jogos em andamento aparecerão aqui automaticamente</p>
+                        <div class="live-pulse"></div>
+                    </div>
+                </div>
+            `;
             return;
         }
 
-        const liveHTML = liveGames.map(game => `
-            <div class="live-game-card">
-                <div class="live-teams">${game.teams}</div>
-                <div class="live-score">⚽ AO VIVO</div>
-                <div class="live-time">${game.time} - ${game.league}</div>
-            </div>
-        `).join('');
+        const liveHTML = liveGames.map(game => {
+            let statusText = '🔜 PRÓXIMO';
+            let statusClass = 'upcoming';
+            
+            if (game.status === '1H' || game.status === '2H' || game.status === 'LIVE') {
+                statusText = `🔥 AO VIVO ${game.statusElapsed || '0'}'`;
+                statusClass = 'live';
+            } else if (game.status === 'HT') {
+                statusText = '⏸️ INTERVALO';
+                statusClass = 'halftime';
+            } else if (game.status === 'ET') {
+                statusText = '⚡ PRORROGAÇÃO';
+                statusClass = 'extratime';
+            } else if (game.status === 'P' || game.status === 'BT') {
+                statusText = '⏳ PÊNALTIS';
+                statusClass = 'penalties';
+            }
+            
+            return `
+                <div class="live-game-card ${statusClass}">
+                    <div class="live-teams">${game.teams}</div>
+                    <div class="live-score">${statusText}</div>
+                    <div class="live-time">${game.time} - ${game.league}</div>
+                </div>
+            `;
+        }).join('');
 
         container.innerHTML = liveHTML;
     }
@@ -434,7 +519,9 @@ class ProfessionalBetManager {
         if (game) {
             game[field] = value;
             this.saveToStorage();
-            this.renderCurrentView();
+            if (this.currentView !== 'welcome') {
+                this.renderCurrentView();
+            }
         }
     }
 
@@ -452,4 +539,5 @@ class ProfessionalBetManager {
     }
 }
 
+// Inicializar o sistema
 const betManager = new ProfessionalBetManager();
