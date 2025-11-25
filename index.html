@@ -1,35 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogos de Hoje</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            padding: 20px;
-        }
-        #games {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .game {
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 0 6px rgba(0,0,0,0.1);
-        }
-    </style>
+    <title>Bloco de Apostas</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>📊 Bloco de Apostas</h1>
+            <div class="date-display" id="currentDate"></div>
+        </header>
 
-    <h2>Jogos de Hoje</h2>
-    <div id="games">Carregando...</div>
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar jogos...">
+        </div>
+
+        <div class="games-container" id="gamesContainer">
+            <!-- Jogos serão carregados aqui -->
+        </div>
+    </div>
 
     <script src="script.js"></script>
-
 </body>
 </html>
