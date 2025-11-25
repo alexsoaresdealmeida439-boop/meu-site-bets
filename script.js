@@ -12,22 +12,123 @@ class ProfessionalBetManager {
         this.displayCurrentDate();
         this.loadTodayGames();
         this.setupEventListeners();
+    }
+
+    displayCurrentDate() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            timeZone: 'America/Sao_Paulo'
+        };
+        document.getElementById('currentDate').textContent = now.toLocaleDateString('pt-BR', options);
+    }
+
+    async loadTodayGames() {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const response = await fetch(
+                `https://v3.football.api-sports.io/fixtures?date=${today}&timezone=America/Sao_Paulo`,
+                {
+                    headers: {
+                        'x-apisports-key': API_KEY,
+                        'x-rapidapi-host': 'v3.football.api-sports.io'
+                    }
+                }
+            );
+            
+            const data = await response.json();
+            
+            if (data.response) {
+                this.processGames(data.response, today);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar jogos:', error);
+            this.renderFolderStructure();
+        }
+    }
+
+    processGames(apiGames, date) {
+        apiGames.forEach(game => {
+            const gameId = game.fixture.id.toString();
+            
+            if (!this.games.has(gameId)) {
+                const gameData = {
+                    id: gameId,
+                    teams: `${game.teams.home.name} vs ${game.teams.away.name}`,
+                    league: game.league.name,
+                    date: this.formatDate(game.fixture.date),
+                    time: this.formatTime(game.fixture.date),
+                    odds: "___/___/___",
+                    apostei: "N",
+                    acertei: "N",
+                    timestamp: new Date(game.fixture.date).getTime(),
+                    originalDate: date
+                };
+                
+                this.games.set(gameId, gameData);
+            }
+        });
+        
+        this.cleanOldGames();
+        this.saveToStorage();
         this.renderFolderStructure();
     }
 
-    // ... (mantenha TODOS os métodos anteriores EXATAMENTE como estavam)
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    }
 
-    renderFolderStructure() {
-        const container = document.getElementById('folderStructure');
-        const gamesArray = Array.from(this.games.values());
+    formatTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'America/Sao_Paulo'
+        });
+    }
+
+    cleanOldGames() {
+        const now = new Date().getTime();
         
-        if (gamesArray.length === 0) {
+        for (let [gameId, game] of this.games) {
+            const gameTime = game.timestamp;
+            const gameFinished = gameTime < (now - (2 * 60 * 60 * 1000));
+            
+            if (gameFinished && game.apostei === "N") {
+                this.games.delete(gameId);
+            }
+        }
+    }
+
+    setupEventListeners() {
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            this.filterGames(e.target.value);
+        });
+    }
+
+    filterGames(searchTerm) {
+        const games = Array.from(this.games.values());
+        const filtered = games.filter(game => 
+            game.teams.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            game.league.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        this.renderFolderStructure(filtered);
+    }
+
+    renderFolderStructure(gamesArray = null) {
+        const games = gamesArray || Array.from(this.games.values());
+        const container = document.getElementById('folderStructure');
+        
+        if (games.length === 0) {
             container.innerHTML = '<div class="loading">Nenhum jogo encontrado</div>';
             return;
         }
 
-        // Agrupar por Ano → Mês → Dia
-        const structure = this.organizeByYearMonthDay(gamesArray);
+        const structure = this.organizeByYearMonthDay(games);
         container.innerHTML = this.generateFolderHTML(structure);
     }
 
@@ -189,9 +290,6 @@ class ProfessionalBetManager {
             this.games = new Map(gamesArray);
         }
     }
-
-    // ... (mantenha todos os outros métodos EXATAMENTE como estavam)
 }
 
-// Inicializar
 const betManager = new ProfessionalBetManager();
