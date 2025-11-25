@@ -4,26 +4,17 @@ const API_KEY = "23b89636f57128671e479701eaad2a37";
 class ProfessionalBetManager {
     constructor() {
         this.games = new Map();
+        this.currentView = 'today';
+        this.currentPath = [];
         this.loadFromStorage();
         this.init();
     }
 
     init() {
-        this.displayCurrentDate();
         this.loadTodayGames();
         this.setupEventListeners();
-    }
-
-    displayCurrentDate() {
-        const now = new Date();
-        const options = { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            timeZone: 'America/Sao_Paulo'
-        };
-        document.getElementById('currentDate').textContent = now.toLocaleDateString('pt-BR', options);
+        this.showTodayGames();
+        this.loadChampionships();
     }
 
     async loadTodayGames() {
@@ -46,7 +37,7 @@ class ProfessionalBetManager {
             }
         } catch (error) {
             console.error('Erro ao carregar jogos:', error);
-            this.renderFolderStructure();
+            this.renderCurrentView();
         }
     }
 
@@ -59,13 +50,15 @@ class ProfessionalBetManager {
                     id: gameId,
                     teams: `${game.teams.home.name} vs ${game.teams.away.name}`,
                     league: game.league.name,
+                    leagueId: game.league.id,
                     date: this.formatDate(game.fixture.date),
                     time: this.formatTime(game.fixture.date),
                     odds: "___/___/___",
                     apostei: "N",
                     acertei: "N",
                     timestamp: new Date(game.fixture.date).getTime(),
-                    originalDate: date
+                    originalDate: date,
+                    status: game.fixture.status.short
                 };
                 
                 this.games.set(gameId, gameData);
@@ -74,7 +67,8 @@ class ProfessionalBetManager {
         
         this.cleanOldGames();
         this.saveToStorage();
-        this.renderFolderStructure();
+        this.renderCurrentView();
+        this.updateLiveGames();
     }
 
     formatDate(dateString) {
@@ -105,108 +99,213 @@ class ProfessionalBetManager {
     }
 
     setupEventListeners() {
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            this.filterGames(e.target.value);
-        });
+        // Event listeners serão adicionados aqui
     }
 
-    filterGames(searchTerm) {
-        const games = Array.from(this.games.values());
-        const filtered = games.filter(game => 
-            game.teams.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            game.league.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        this.renderFolderStructure(filtered);
+    // SISTEMA DE NAVEGAÇÃO BONECA RUSSA
+    showTodayGames() {
+        this.currentView = 'today';
+        this.currentPath = [];
+        this.renderCurrentView();
     }
 
-    renderFolderStructure(gamesArray = null) {
-        const games = gamesArray || Array.from(this.games.values());
-        const container = document.getElementById('folderStructure');
+    showYearlyFolders() {
+        this.currentView = 'yearly';
+        this.renderPeriodFolders();
+    }
+
+    showMonthlyFolders() {
+        this.currentView = 'monthly';
+        this.renderPeriodFolders();
+    }
+
+    showDailyFolders() {
+        this.currentView = 'daily';
+        this.renderPeriodFolders();
+    }
+
+    renderCurrentView() {
+        const gamesArray = Array.from(this.games.values());
         
-        if (games.length === 0) {
-            container.innerHTML = '<div class="loading">Nenhum jogo encontrado</div>';
+        if (gamesArray.length === 0) {
+            this.renderFolderContent([], 'Nenhum jogo encontrado');
             return;
         }
 
-        const structure = this.organizeByYearMonthDay(games);
-        container.innerHTML = this.generateFolderHTML(structure);
+        let filteredGames = [];
+        let title = '';
+
+        switch (this.currentView) {
+            case 'today':
+                const today = new Date().toISOString().split('T')[0];
+                filteredGames = gamesArray.filter(game => game.originalDate === today);
+                title = 'HOJE';
+                break;
+            case 'year':
+                filteredGames = gamesArray.filter(game => {
+                    const year = new Date(game.timestamp).getFullYear();
+                    return year === this.currentPath[0];
+                });
+                title = `ANO ${this.currentPath[0]}`;
+                break;
+            case 'month':
+                filteredGames = gamesArray.filter(game => {
+                    const date = new Date(game.timestamp);
+                    return date.getFullYear() === this.currentPath[0] && 
+                           date.getMonth() === this.currentPath[1];
+                });
+                title = `${this.getMonthName(this.currentPath[1])} ${this.currentPath[0]}`;
+                break;
+            case 'day':
+                filteredGames = gamesArray.filter(game => {
+                    const date = new Date(game.timestamp);
+                    return date.getFullYear() === this.currentPath[0] && 
+                           date.getMonth() === this.currentPath[1] &&
+                           date.getDate() === this.currentPath[2];
+                });
+                title = this.getDayTitle(filteredGames[0]?.originalDate);
+                break;
+            case 'championship':
+                filteredGames = gamesArray.filter(game => game.leagueId === this.currentPath[0]);
+                title = this.currentPath[1] || 'Campeonato';
+                break;
+        }
+
+        document.getElementById('folderTitle').textContent = title;
+        this.renderFolderContent(filteredGames);
     }
 
-    organizeByYearMonthDay(games) {
-        const structure = {};
+    renderFolderContent(games, emptyMessage = 'Nenhum jogo nesta pasta') {
+        const container = document.getElementById('folderContent');
         
+        if (games.length === 0) {
+            container.innerHTML = `<div class="loading">${emptyMessage}</div>`;
+            return;
+        }
+
+        container.innerHTML = games.map(game => this.createGameCard(game)).join('');
+    }
+
+    renderPeriodFolders() {
+        const container = document.getElementById('periodFolders');
+        const gamesArray = Array.from(this.games.values());
+        
+        if (gamesArray.length === 0) {
+            container.innerHTML = '<div class="loading">Nenhum jogo salvo</div>';
+            return;
+        }
+
+        let foldersHTML = '';
+
+        switch (this.currentView) {
+            case 'yearly':
+                const years = this.getUniqueYears(gamesArray);
+                foldersHTML = years.map(year => `
+                    <div class="period-folder" onclick="betManager.openYear(${year})">
+                        <div class="folder-name">${year}</div>
+                        <div class="folder-count">${this.countGamesByYear(gamesArray, year)} jogos</div>
+                    </div>
+                `).join('');
+                break;
+            
+            case 'monthly':
+                const months = this.getUniqueMonths(gamesArray);
+                foldersHTML = months.map(month => `
+                    <div class="period-folder" onclick="betManager.openMonth(${month.year}, ${month.month})">
+                        <div class="folder-name">${this.getMonthName(month.month)} ${month.year}</div>
+                        <div class="folder-count">${month.count} jogos</div>
+                    </div>
+                `).join('');
+                break;
+            
+            case 'daily':
+                const days = this.getUniqueDays(gamesArray);
+                foldersHTML = days.map(day => `
+                    <div class="period-folder" onclick="betManager.openDay(${day.year}, ${day.month}, ${day.day})">
+                        <div class="folder-name">${this.getDayTitle(day.dateString)}</div>
+                        <div class="folder-count">${day.count} jogos</div>
+                    </div>
+                `).join('');
+                break;
+        }
+
+        container.innerHTML = foldersHTML;
+    }
+
+    // Métodos de navegação
+    openYear(year) {
+        this.currentView = 'year';
+        this.currentPath = [year];
+        this.renderCurrentView();
+    }
+
+    openMonth(year, month) {
+        this.currentView = 'month';
+        this.currentPath = [year, month];
+        this.renderCurrentView();
+    }
+
+    openDay(year, month, day) {
+        this.currentView = 'day';
+        this.currentPath = [year, month, day];
+        this.renderCurrentView();
+    }
+
+    openChampionship(leagueId, leagueName) {
+        this.currentView = 'championship';
+        this.currentPath = [leagueId, leagueName];
+        this.renderCurrentView();
+    }
+
+    // Métodos auxiliares
+    getUniqueYears(games) {
+        const years = new Set();
+        games.forEach(game => {
+            const year = new Date(game.timestamp).getFullYear();
+            years.add(year);
+        });
+        return Array.from(years).sort((a, b) => b - a);
+    }
+
+    getUniqueMonths(games) {
+        const months = new Map();
+        games.forEach(game => {
+            const date = new Date(game.timestamp);
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const key = `${year}-${month}`;
+            
+            if (!months.has(key)) {
+                months.set(key, { year, month, count: 0 });
+            }
+            months.get(key).count++;
+        });
+        return Array.from(months.values()).sort((a, b) => 
+            b.year - a.year || b.month - a.month
+        );
+    }
+
+    getUniqueDays(games) {
+        const days = new Map();
         games.forEach(game => {
             const date = new Date(game.timestamp);
             const year = date.getFullYear();
             const month = date.getMonth();
             const day = date.getDate();
+            const key = `${year}-${month}-${day}`;
             
-            if (!structure[year]) structure[year] = {};
-            if (!structure[year][month]) structure[year][month] = {};
-            if (!structure[year][month][day]) structure[year][month][day] = [];
-            
-            structure[year][month][day].push(game);
+            if (!days.has(key)) {
+                days.set(key, { year, month, day, dateString: game.originalDate, count: 0 });
+            }
+            days.get(key).count++;
         });
-        
-        return structure;
+        return Array.from(days.values()).sort((a, b) => 
+            b.year - a.year || b.month - a.month || b.day - a.day
+        );
     }
 
-    generateFolderHTML(structure) {
-        let html = '';
-        
-        for (const [year, months] of Object.entries(structure).sort((a,b) => b[0] - a[0])) {
-            let yearGamesCount = 0;
-            let monthsHTML = '';
-            
-            for (const [month, days] of Object.entries(months).sort((a,b) => b[0] - a[0])) {
-                let monthGamesCount = 0;
-                let daysHTML = '';
-                
-                for (const [day, dayGames] of Object.entries(days).sort((a,b) => b[0] - a[0])) {
-                    monthGamesCount += dayGames.length;
-                    
-                    daysHTML += `
-                        <div class="day-folder">
-                            <div class="day-header">
-                                <div class="day-title">${this.getDayTitle(dayGames[0].originalDate)}</div>
-                                <div class="day-count">${dayGames.length} jogo${dayGames.length > 1 ? 's' : ''}</div>
-                            </div>
-                            <div class="games-grid">
-                                ${dayGames.map(game => this.createGameCard(game)).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                yearGamesCount += monthGamesCount;
-                
-                monthsHTML += `
-                    <div class="month-folder">
-                        <div class="month-header">
-                            <div class="month-title">${this.getMonthName(month)}</div>
-                            <div class="month-count">${monthGamesCount} jogo${monthGamesCount > 1 ? 's' : ''}</div>
-                        </div>
-                        <div class="days-grid">
-                            ${daysHTML}
-                        </div>
-                    </div>
-                `;
-            }
-            
-            html += `
-                <div class="year-folder">
-                    <div class="year-header">
-                        <div class="year-title">${year}</div>
-                        <div class="year-count">${yearGamesCount} jogo${yearGamesCount > 1 ? 's' : ''}</div>
-                    </div>
-                    <div class="months-grid">
-                        ${monthsHTML}
-                    </div>
-                </div>
-            `;
-        }
-        
-        return html;
+    countGamesByYear(games, year) {
+        return games.filter(game => new Date(game.timestamp).getFullYear() === year).length;
     }
 
     getMonthName(month) {
@@ -230,6 +329,67 @@ class ProfessionalBetManager {
             day: '2-digit',
             month: '2-digit'
         }).toUpperCase();
+    }
+
+    // CAMPEONATOS
+    async loadChampionships() {
+        try {
+            const response = await fetch(
+                'https://v3.football.api-sports.io/leagues?current=true',
+                {
+                    headers: {
+                        'x-apisports-key': API_KEY,
+                        'x-rapidapi-host': 'v3.football.api-sports.io'
+                    }
+                }
+            );
+            
+            const data = await response.json();
+            
+            if (data.response) {
+                this.renderChampionships(data.response.slice(0, 12)); // Top 12 campeonatos
+            }
+        } catch (error) {
+            console.error('Erro ao carregar campeonatos:', error);
+        }
+    }
+
+    renderChampionships(leagues) {
+        const container = document.getElementById('championshipsGrid');
+        
+        const championshipsHTML = leagues.map(league => `
+            <div class="championship-card" onclick="betManager.openChampionship(${league.league.id}, '${league.league.name}')">
+                <div class="championship-name">${league.league.name}</div>
+                <div class="championship-country">${league.country.name}</div>
+            </div>
+        `).join('');
+
+        container.innerHTML = championshipsHTML;
+    }
+
+    // JOGOS EM ANDAMENTO
+    updateLiveGames() {
+        const container = document.getElementById('liveGames');
+        const gamesArray = Array.from(this.games.values());
+        
+        const liveGames = gamesArray.filter(game => 
+            game.status === '1H' || game.status === '2H' || game.status === 'HT' || game.status === 'LIVE'
+        ).slice(0, 5); // Mostrar apenas 5 jogos ao vivo
+
+        if (liveGames.length === 0) {
+            container.innerHTML = '<div class="loading">Nenhum jogo em andamento</div>';
+            return;
+        }
+
+        const liveHTML = liveGames.map(game => `
+            <div class="live-game-card">
+                <div class="live-teams">${game.teams}</div>
+                <div class="live-score">⚽ AO VIVO</div>
+                <div class="live-time">${game.time} - ${game.league}</div>
+            </div>
+        `).join('');
+
+        container.innerHTML = liveHTML;
     }
 
     createGameCard(game) {
@@ -274,7 +434,7 @@ class ProfessionalBetManager {
         if (game) {
             game[field] = value;
             this.saveToStorage();
-            this.renderFolderStructure();
+            this.renderCurrentView();
         }
     }
 
