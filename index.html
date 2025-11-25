@@ -1,25 +1,121 @@
 
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Site Bets</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>ALXbet - Premium Betting Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- BACKGROUND LUXUOSO -->
+    <div class="premium-bg"></div>
+    <div class="gold-overlay"></div>
 
-    <h1>Gerenciador de Jogos</h1>
-
-    <div id="dateSelector">
-        <button class="tab-button" data-day="HOJE">Hoje</button>
-        <button class="tab-button" data-day="ONTEM">Ontem</button>
-        <button class="tab-button" data-day="AMANHA">Amanhã</button>
+    <div class="main-header">
+        <div class="logo-container">
+            <div class="logo-wrapper">
+                <h1 class="main-logo">ALX<span>BET</span></h1>
+                <div class="logo-subtitle">PREMIUM BETTING SUITE</div>
+            </div>
+            <div class="header-graphic">
+                <div class="graphic-element">🎰</div>
+                <div class="graphic-element">💰</div>
+                <div class="graphic-element">⚡</div>
+            </div>
+        </div>
     </div>
 
-    <button id="addGameButton">Adicionar Jogo</button>
+    <div class="dashboard">
+        <!-- COLUNA ESQUERDA - JOGOS EM ANDAMENTO -->
+        <div class="left-column">
+            <div class="section-title">
+                <div class="title-icon">🔥</div>
+                <h2>JOGOS AO VIVO</h2>
+            </div>
+            <div class="live-games-container">
+                <div class="live-games" id="liveGames">
+                    <div class="no-live-games">
+                        <div class="empty-state">
+                            <div class="empty-icon">⏰</div>
+                            <h3>Nenhum jogo ao vivo</h3>
+                            <p>Os jogos em andamento aparecerão aqui automaticamente</p>
+                            <div class="live-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div id="gamesContainer"></div>
+        <!-- COLUNA CENTRAL - ÁREA PRINCIPAL -->
+        <div class="center-column">
+            <div class="welcome-section" id="welcomeSection">
+                <div class="hero-section">
+                    <div class="hero-content">
+                        <h3>CONTROLE TOTAL DAS SUAS APOSTAS</h3>
+                        <p>Sistema profissional de análise e gestão de betting</p>
+                        <button class="premium-btn" onclick="betManager.showTodayGames()">
+                            <span class="btn-icon">🎯</span>
+                            VER JOGOS DE HOJE
+                        </button>
+                    </div>
+                    <div class="hero-graphic">
+                        <div class="graphic-man">📱💵</div>
+                        <div class="money-stack">💰💰💰</div>
+                    </div>
+                </div>
+            </div>
+            <div class="current-folder" id="currentFolder" style="display: none;">
+                <div class="folder-header">
+                    <h2 id="folderTitle">HOJE</h2>
+                    <div class="folder-actions">
+                        <button class="back-btn" onclick="betManager.showWelcomeView()">← Voltar</button>
+                    </div>
+                </div>
+                <div class="folder-content" id="folderContent"></div>
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA - PERÍODO -->
+        <div class="right-column">
+            <div class="section-title">
+                <div class="title-icon">📊</div>
+                <h2>PERÍODO</h2>
+            </div>
+            <div class="period-nav">
+                <div class="period-btn" onclick="betManager.showYearlyFolders()">
+                    <span>ANO</span>
+                </div>
+                <div class="period-btn" onclick="betManager.showMonthlyFolders()">
+                    <span>MÊS</span>
+                </div>
+                <div class="period-btn" onclick="betManager.showDailyFolders()">
+                    <span>DIA</span>
+                </div>
+            </div>
+            <div class="folders-container" id="periodFolders">
+                <div class="empty-folders">
+                    <div class="folder-icon">📁</div>
+                    <p>Selecione um período</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÁREA DE CAMPEONATOS -->
+    <div class="championships-section">
+        <div class="section-header">
+            <div class="title-icon">🏆</div>
+            <h2>CAMPEONATOS PREMIUM</h2>
+        </div>
+        <div class="championships-grid" id="championshipsGrid">
+            <div class="loading-championships">
+                <div class="loading-spinner"></div>
+                <p>Carregando campeonatos...</p>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
