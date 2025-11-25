@@ -7,23 +7,72 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <h1>ALX<span>bet</span></h1>
-                <div class="tagline">Professional Betting Manager</div>
-            </div>
-            <div class="date-display" id="currentDate"></div>
-        </header>
+    <div class="main-header">
+        <div class="logo-container">
+            <h1 class="main-logo">ALX<span>bet</span></h1>
+            <div class="tagline">Professional Betting Manager</div>
+        </div>
+        <div class="header-background"></div>
+    </div>
 
-        <div class="controls">
-            <div class="search-container">
-                <input type="text" id="searchInput" placeholder="🔍 Search matches...">
+    <div class="dashboard">
+        <!-- COLUNA ESQUERDA - JOGOS EM ANDAMENTO (30%) -->
+        <div class="left-column">
+            <div class="section-title">
+                <h2>🎯 JOGOS EM ANDAMENTO</h2>
+            </div>
+            <div class="live-games" id="liveGames">
+                <div class="loading">Carregando jogos ao vivo...</div>
             </div>
         </div>
 
-        <div class="folder-structure" id="folderStructure">
-            <div class="loading">Carregando jogos...</div>
+        <!-- COLUNA CENTRAL - ÁREA PRINCIPAL (50%) -->
+        <div class="center-column">
+            <div class="current-folder" id="currentFolder">
+                <div class="folder-header">
+                    <h2 id="folderTitle">HOJE</h2>
+                    <div class="folder-breadcrumb" id="breadcrumb"></div>
+                </div>
+                <div class="folder-content" id="folderContent">
+                    <div class="loading">Carregando jogos...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA - PASTAS PERÍODO (20%) -->
+        <div class="right-column">
+            <div class="section-title">
+                <h2>📁 PERÍODO</h2>
+            </div>
+            <div class="period-folders">
+                <div class="folder-stack">
+                    <div class="folder-item" onclick="betManager.showYearlyFolders()">
+                        <div class="folder-icon">📊</div>
+                        <div class="folder-name">Anuais</div>
+                    </div>
+                    <div class="folder-item" onclick="betManager.showMonthlyFolders()">
+                        <div class="folder-icon">📅</div>
+                        <div class="folder-name">Mensais</div>
+                    </div>
+                    <div class="folder-item" onclick="betManager.showDailyFolders()">
+                        <div class="folder-icon">📝</div>
+                        <div class="folder-name">Diárias</div>
+                    </div>
+                </div>
+                <div class="folders-container" id="periodFolders">
+                    <!-- Pastas serão carregadas aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÁREA DE CAMPEONATOS -->
+    <div class="championships-section">
+        <div class="section-title">
+            <h2>🏆 CAMPEONATOS</h2>
+        </div>
+        <div class="championships-grid" id="championshipsGrid">
+            <div class="loading">Carregando campeonatos...</div>
         </div>
     </div>
 
