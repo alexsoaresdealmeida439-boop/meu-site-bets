@@ -1,37 +1,40 @@
-// Chave da API
-const apiKey = 23b89636f57128671e479701eaad2a37
+const apiKey = "23b89636f57128671e479701eaad2a37";
 
+// Pega a data de hoje automaticamente no formato YYYY-MM-DD
+const today = new Date().toISOString().split("T")[0];
 
+async function loadGames() {
+    const url = `https://v3.football.api-sports.io/fixtures?date=${today}`;
 
-// URL da API (modifique conforme a sua necessidade)
-const apiUrl = `https://api.sportsdata.io/v3/soccer/scores/json/GamesByDate/{data}?key=${apiKey}`;
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "x-apisports-key": apiKey
+        }
+    });
 
-// Função para obter os jogos
-async function obterJogos() {
-  try {
-    const resposta = await fetch(apiUrl);
-    const dados = await resposta.json();
+    const data = await response.json();
 
-    // Se os dados forem encontrados, exibe na página
-    if (dados) {
-      const jogosDiv = document.getElementById('jogos');
-      jogosDiv.innerHTML = '';
+    const container = document.getElementById("games");
+    container.innerHTML = "";
 
-      dados.forEach(jogo => {
-        const jogoElemento = document.createElement('div');
-        jogoElemento.innerHTML = `
-          <h3>${jogo.homeTeam.name} vs ${jogo.awayTeam.name}</h3>
-          <p>Data: ${jogo.date}</p>
-          <p>Odd: ${jogo.odd}</p>
-          <p>Campeonato: ${jogo.league.name}</p>
-        `;
-        jogosDiv.appendChild(jogoElemento);
-      });
+    if (!data.response || data.response.length === 0) {
+        container.innerHTML = "<p>Nenhum jogo encontrado hoje.</p>";
+        return;
     }
-  } catch (erro) {
-    console.error('Erro ao buscar jogos:', erro);
-  }
+
+    data.response.forEach(game => {
+        const item = document.createElement("div");
+        item.classList.add("game");
+
+        item.innerHTML = `
+            <p><strong>${game.teams.home.name}</strong> vs <strong>${game.teams.away.name}</strong></p>
+            <p>Horário: ${game.fixture.date}</p>
+            <p>Campeonato: ${game.league.name}</p>
+        `;
+
+        container.appendChild(item);
+    });
 }
 
-// Chama a função ao carregar o script
-obterJogos();
+loadGames();
