@@ -1,15 +1,35 @@
+
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jogos de Hoje</title>
-    <link rel="stylesheet" href="estilo.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            padding: 20px;
+        }
+        #games {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .game {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 6px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
-    <h1>Jogos de Hoje</h1>
-    <div id="games"></div>
+
+    <h2>Jogos de Hoje</h2>
+    <div id="games">Carregando...</div>
 
     <script src="script.js"></script>
+
 </body>
 </html>
