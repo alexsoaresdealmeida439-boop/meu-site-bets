@@ -1,139 +1,165 @@
 
-/* SEÇÃO JOGOS DE HOJE - DESIGN IDÊNTICO À FOTO */
-.today-games-section {
-    margin: 20px 0;
-    padding: 0 15px;
+
+/* CORES MODIFICADAS - LARANJA PARA VERDE ESCURO */
+:root {
+    --verde-principal: #0a5c0a;     /* Verde escuro principal */
+    --verde-secundario: #1e7a1e;    /* Verde um pouco mais claro */
+    --verde-destaque: #2e8b2e;      /* Verde para destaques */
 }
 
-.today-games-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 100%;
+/* REMOVER TODOS OS EFEITOS DE MOVIMENTO/ANIMAÇÃO */
+* {
+    animation: none !important;
+    transition: none !important;
 }
 
-.today-game-card {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 12px 15px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+/* HEADER - CORES MODIFICADAS */
+.main-header {
+    border-image: linear-gradient(45deg, #0a5c0a, #1e7a1e, #2e8b2e) 1;
 }
 
-.game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 12px;
-    color: #666;
+.main-logo {
+    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 50%, #2e8b2e 100%);
+    text-shadow: 0 0 30px rgba(10, 92, 10, 0.3);
 }
 
-.game-teams {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
+.main-logo::after {
+    background: linear-gradient(90deg, transparent, #0a5c0a, #1e7a1e, #2e8b2e, transparent);
 }
 
-.team-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 0;
-}
-
-.team-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    flex: 1;
-}
-
-.team-vs {
-    font-size: 10px;
-    color: #999;
-    margin: 0 8px;
-}
-
-.odds-container {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.odd-value {
-    background: #f8f8f8;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-    min-width: 45px;
-    text-align: center;
-}
-
-.odd-value:first-child {
-    color: #0a5c0a;
-    background: rgba(10, 92, 10, 0.05);
-    border-color: rgba(10, 92, 10, 0.2);
-}
-
-.game-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 8px;
-    border-top: 1px solid #f0f0f0;
-}
-
-.game-time {
-    font-size: 12px;
-    font-weight: 600;
+.logo-subtitle {
     color: #0a5c0a;
 }
 
-.game-markets {
-    font-size: 11px;
-    color: #666;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+/* REMOVER ANIMAÇÕES DOS ELEMENTOS GRÁFICOS */
+.graphic-element {
+    animation: none !important;
+    text-shadow: 0 0 20px rgba(10, 92, 10, 0.5);
 }
 
-.game-markets::after {
-    content: "▾";
-    font-size: 14px;
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+}
+
+/* SEÇÃO TÍTULOS - CORES MODIFICADAS */
+.section-title {
+    border-image: linear-gradient(90deg, #0a5c0a, transparent) 1;
+}
+
+.section-title h2 {
     color: #0a5c0a;
 }
 
-/* ORGANIZAÇÃO CRONOLÓGICA - MAIS ANTIGOS PRIMEIRO */
-.today-games-container {
-    display: flex;
-    flex-direction: column;
+/* JOGOS AO VIVO - CORES MODIFICADAS */
+.live-game-card {
+    background: linear-gradient(135deg, rgba(10, 92, 10, 0.1) 0%, rgba(30, 122, 30, 0.1) 100%);
+    border: 1px solid rgba(10, 92, 10, 0.3);
 }
 
-/* HEADER DA SEÇÃO */
-.today-games-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    padding: 0 5px;
+.live-game-card::before {
+    animation: none !important;
 }
 
-.today-games-header h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
+@keyframes shimmer {
+    0% { left: -100%; }
 }
 
-.today-date {
-    font-size: 12px;
-    color: #666;
-    background: #f0f0f0;
-    padding: 2px 8px;
-    border-radius: 12px;
+.live-score {
+    color: #0a5c0a;
+}
+
+.live-time {
+    color: #1e7a1e;
+}
+
+/* REMOVER PULSE ANIMATION */
+.live-pulse {
+    animation: none !important;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.8); opacity: 1; }
+}
+
+/* HERO SECTION - CORES MODIFICADAS */
+.hero-content h3 {
+    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 50%, #2e8b2e 100%);
+}
+
+.premium-btn {
+    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 100%);
+    box-shadow: 0 5px 20px rgba(10, 92, 10, 0.3);
+}
+
+.premium-btn:hover {
+    transform: none;
+    box-shadow: 0 5px 20px rgba(10, 92, 10, 0.3);
+}
+
+/* REMOVER ANIMAÇÕES DOS GRÁFICOS */
+.graphic-man {
+    animation: none !important;
+}
+
+.money-stack {
+    animation: none !important;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0px); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+}
+
+/* PERÍODO COMPACTO - CORES MODIFICADAS */
+.period-btn {
+    background: rgba(10, 92, 10, 0.1);
+    border: 1px solid rgba(10, 92, 10, 0.3);
+    color: #0a5c0a;
+}
+
+.period-btn:hover {
+    background: rgba(10, 92, 10, 0.2);
+    transform: none;
+}
+
+/* CAMPEONATOS PREMIUM - CORES MODIFICADAS */
+.championships-section {
+    border-image: linear-gradient(90deg, transparent, #0a5c0a, #1e7a1e, #2e8b2e, transparent) 1;
+}
+
+.section-header h2 {
+    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 100%);
+}
+
+.championship-card {
+    background: linear-gradient(135deg, rgba(10, 92, 10, 0.1) 0%, rgba(30, 122, 30, 0.1) 100%);
+    border: 1px solid rgba(10, 92, 10, 0.2);
+}
+
+.championship-card::before {
+    transition: none !important;
+}
+
+.championship-card:hover {
+    transform: none;
+    border-color: #0a5c0a;
+    box-shadow: 0 5px 15px rgba(10, 92, 10, 0.2);
+}
+
+.championship-name {
+    color: #0a5c0a;
+}
+
+/* REMOVER ANIMAÇÃO DE LOADING */
+.loading-spinner {
+    animation: none !important;
+    border: 4px solid #0a5c0a;
+    border-top: 4px solid #0a5c0a;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
 }
