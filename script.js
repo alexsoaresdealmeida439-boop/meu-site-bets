@@ -5,47 +5,52 @@ class ProfessionalBetManager {
   constructor() {
     this.games = new Map();
     this.currentView = 'welcome';
-    this.currentPath = [];
     this.loadFromStorage();
     this.init();
   }
 
   init() {
     this.loadTodayGames();
-    this.loadChampionships();
     setInterval(() => this.updateLiveGames(), 30000);
-    this.showWelcomeView();
-    setTimeout(() => this.injectScannerBox(), 1500);
+    setTimeout(() => this.injectScannerBox(), 1000);
   }
 
   /* ================================
      🔥 CAIXA COLAR + PROCESSAR
   =================================*/
   injectScannerBox() {
-    const center = document.querySelector('.folder-header');
-    if (!center || document.getElementById('scannerBox')) return;
+    if (document.getElementById('scannerBox')) return;
 
-    const div = document.createElement('div');
-    div.id = 'scannerBox';
-    div.style.marginTop = '15px';
+    const alvo = document.querySelector('.folder-header');
+    if (!alvo) return;
 
-    div.innerHTML = `
-      <textarea id="scannerInput" 
+    const box = document.createElement('div');
+    box.id = 'scannerBox';
+    box.style.margin = '15px 0';
+
+    box.innerHTML = `
+      <textarea id="scannerInput"
         placeholder="COLAR"
-        style="width:100%;height:120px;padding:10px;"></textarea>
+        style="width:100%;height:140px;padding:10px;"></textarea>
 
-      <button onclick="betManager.processScannerText()" 
-        style="margin-top:8px;padding:8px 16px;font-weight:bold;">
+      <button id="btnProcessar"
+        style="margin-top:8px;padding:8px 18px;font-weight:bold;">
         PROCESSAR
       </button>
     `;
 
-    center.appendChild(div);
+    alvo.appendChild(box);
+
+    document.getElementById('btnProcessar')
+      .addEventListener('click', () => this.processScannerText());
   }
 
   processScannerText() {
-    const texto = document.getElementById('scannerInput').value;
-    if (!texto) return;
+    const texto = document.getElementById('scannerInput').value.trim();
+    if (!texto) {
+      alert("Nenhum texto colado");
+      return;
+    }
 
     const blocos = texto.split(/\n\s*\n/);
 
@@ -53,26 +58,33 @@ class ProfessionalBetManager {
       const linhas = bloco.split('\n').map(l => l.trim());
 
       const jogoLinha = linhas.find(l => l.toLowerCase().includes(' x '));
-      const oddsLinha = linhas.find(l => l.match(/\d+\.\d+\/\d+\.\d+\/\d+\.\d+/));
+      const oddsLinha = linhas.find(l =>
+        /\d+\.\d+\/\d+\.\d+\/\d+\.\d+/.test(l)
+      );
 
       if (!jogoLinha || !oddsLinha) return;
 
       const odds = oddsLinha.match(/\d+\.\d+\/\d+\.\d+\/\d+\.\d+/)[0];
-      const jogoNome = jogoLinha.toLowerCase();
 
-      for (let game of this.games.values()) {
-        const apiName = game.teams.toLowerCase().replace('vs', 'x');
+      const [timeA, timeB] = jogoLinha
+        .toLowerCase()
+        .split(' x ')
+        .map(t => t.trim());
 
-        if (apiName.includes(jogoNome.split(' x ')[0]) &&
-            apiName.includes(jogoNome.split(' x ')[1])) {
+      this.games.forEach(game => {
+        const nome = game.teams
+          .toLowerCase()
+          .replace('vs', 'x');
 
+        if (nome.includes(timeA) && nome.includes(timeB)) {
           game.odds = odds;
         }
-      }
+      });
     });
 
     this.saveToStorage();
     this.renderCurrentView();
+    alert("Odds aplicadas com sucesso");
   }
 
   /* ================================
@@ -100,56 +112,38 @@ class ProfessionalBetManager {
           id,
           teams: `${game.teams.home.name} vs ${game.teams.away.name}`,
           league: game.league.name,
-          leagueId: game.league.id,
           time: this.formatTime(game.fixture.date),
           odds: "___/___/___",
           apostei: "N",
           acertei: "N",
-          timestamp: new Date(game.fixture.date).getTime(),
-          originalDate: date,
-          status: game.fixture.status.short,
-          fixtureDate: game.fixture.date
+          timestamp: new Date(game.fixture.date).getTime()
         });
       }
     });
     this.saveToStorage();
-  }
-
-  /* ================================
-     VIEW
-  =================================*/
-  showWelcomeView() {
-    document.getElementById('welcomeSection').style.display = 'flex';
-    document.getElementById('currentFolder').style.display = 'none';
-  }
-
-  showTodayGames() {
-    this.currentView = 'today';
-    document.getElementById('welcomeSection').style.display = 'none';
-    document.getElementById('currentFolder').style.display = 'block';
     this.renderCurrentView();
   }
 
+  /* ================================
+     RENDER
+  =================================*/
   renderCurrentView() {
-    let jogos = Array.from(this.games.values());
+    const container = document.getElementById('folderContent');
+    if (!container) return;
 
-    jogos.sort((a, b) => {
+    const jogos = [...this.games.values()].sort((a, b) => {
       if (a.odds !== "___/___/___" && b.odds === "___/___/___") return -1;
       if (a.odds === "___/___/___" && b.odds !== "___/___/___") return 1;
       return a.timestamp - b.timestamp;
     });
 
-    const container = document.getElementById('folderContent');
-    container.innerHTML = jogos.map(j => this.createGameCard(j)).join('');
-  }
-
-  createGameCard(game) {
-    return `
-      <div class="game-card">
-        <div><b>${game.teams}</b> — ${game.time}</div>
-        <input value="${game.odds}" readonly />
+    container.innerHTML = jogos.map(j => `
+      <div class="game-card" style="margin-bottom:10px;">
+        <div><b>${j.teams}</b> — ${j.time}</div>
+        <div>Odds: ${j.odds}</div>
+        <div>Apostei? ${j.apostei} | Acertei? ${j.acertei}</div>
       </div>
-    `;
+    `).join('');
   }
 
   formatTime(d) {
@@ -168,7 +162,6 @@ class ProfessionalBetManager {
     if (s) this.games = new Map(JSON.parse(s));
   }
 
-  loadChampionships() {}
   updateLiveGames() {}
 }
 
