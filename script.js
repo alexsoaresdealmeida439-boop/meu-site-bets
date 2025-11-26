@@ -107,6 +107,57 @@ class ProfessionalBetManager {
 
 const betManager = new ProfessionalBetManager();
 
+// ================================
+// 🔎 SCANNER GOOGLE LENS (ACOPLADO)
+// ================================
+window.processarScanner = function () {
+    const textarea = document.getElementById("scannerInput");
+    const msg = document.getElementById("scannerMsg");
+
+    if (!textarea || !textarea.value.trim()) {
+        if (msg) msg.innerText = "Cole o texto do Google Lens.";
+        return;
+    }
+
+    const text = textarea.value
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    const oddsMatches = text.match(/\d+\.\d+\/\d+\.\d+\/\d+\.\d+/g);
+    if (!oddsMatches) {
+        if (msg) msg.innerText = "Nenhuma odd válida encontrada.";
+        return;
+    }
+
+    let updated = 0;
+
+    oddsMatches.forEach(odd => {
+        const idx = text.indexOf(odd);
+        const trecho = text.substring(Math.max(0, idx - 80), idx);
+
+        betManager.games.forEach(game => {
+            const teams = game.teams
+                .toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            const [home, away] = teams.split(" vs ");
+
+            if (trecho.includes(home) && trecho.includes(away)) {
+                game.odds = odd;
+                updated++;
+            }
+        });
+    });
+
+    betManager.saveToStorage();
+    betManager.renderCurrentView();
+
+    if (msg) {
+        msg.innerText = updated
+            ? `✅ ${updated} odds inseridas automaticamente`
+            : "❌ Nenhum jogo correspondente encontrado";
+    }
+};
 // ✅ ACIONADOR DO BOTÃO PROCESSAR
 window.processarScanner = () => {
     const text = document.getElementById("scannerInput").value;
