@@ -1,146 +1,150 @@
 
 const API_KEY = "23b89636f57128671e479701eaad2a37";
 
-class BetManager {
+class ProfessionalBetManager {
   constructor() {
     this.games = new Map();
-    this.loadStorage();
+    this.loadFromStorage();
     this.init();
   }
 
-  /* ========= INIT ========= */
   init() {
-    document.addEventListener("DOMContentLoaded", () => {
-      this.loadTodayGames().then(() => {
-        this.renderToday();
-        this.injectScannerBox();
-      });
-    });
+    this.bindButtons();
+    this.loadTodayGames();
+    setTimeout(() => this.injectScannerBox(), 800);
   }
 
-  /* ========= SCANNER ========= */
+  /* =========================
+     BOTÕES
+  ========================= */
+  bindButtons() {
+    const btn = document.getElementById("btnHoje");
+    if (btn) btn.onclick = () => this.showTodayGames();
+  }
+
+  showTodayGames() {
+    document.getElementById("welcomeSection").style.display = "none";
+    document.getElementById("currentFolder").style.display = "block";
+    this.renderGames();
+  }
+
+  /* =========================
+     SCANNER
+  ========================= */
   injectScannerBox() {
     const header = document.querySelector(".folder-header");
     if (!header || document.getElementById("scannerBox")) return;
 
-    const box = document.createElement("div");
-    box.id = "scannerBox";
-    box.style.marginTop = "10px";
+    header.insertAdjacentHTML("beforeend", `
+      <div id="scannerBox" style="margin-top:15px">
+        <textarea id="scannerInput"
+          placeholder="COLAR"
+          style="width:100%;height:120px;padding:10px"></textarea>
+        <button id="btnProcessar"
+          style="margin-top:8px;font-weight:bold">PROCESSAR</button>
+      </div>
+    `);
 
-    box.innerHTML = `
-      <textarea id="scannerInput" placeholder="COLAR"
-        style="width:100%;height:120px;padding:8px;"></textarea>
-      <button id="scannerBtn" style="margin-top:6px">
-        PROCESSAR
-      </button>
-    `;
-
-    header.appendChild(box);
-
-    document.getElementById("scannerBtn").onclick = () => {
-      this.processScanner();
-    };
+    document.getElementById("btnProcessar").onclick =
+      () => this.processScannerText();
   }
 
-  processScanner() {
-    const texto = document.getElementById("scannerInput").value.trim();
-    if (!texto) return;
+  processScannerText() {
+    const texto = document.getElementById("scannerInput").value;
+    if (!texto) return alert("Cole o texto do Google Lens");
 
     const blocos = texto.split(/\n\s*\n/);
 
     blocos.forEach(bloco => {
       const linhas = bloco.split("\n").map(l => l.trim());
-      const jogo = linhas.find(l => l.includes(" x "));
+
+      const jogo = linhas.find(l => l.toLowerCase().includes(" x "));
       const oddsLinha = linhas.find(l => l.match(/\d+\.\d+\/\d+\.\d+\/\d+\.\d+/));
       if (!jogo || !oddsLinha) return;
 
-      const [o1, ox, o2] = oddsLinha.match(/\d+\.\d+/g);
-      const nome = jogo.toLowerCase();
+      const odds = oddsLinha.match(/\d+\.\d+\/\d+\.\d+\/\d+\.\d+/)[0];
+      const [a, b] = jogo.toLowerCase().split(" x ").map(t => t.trim());
 
-      this.games.forEach(game => {
-        const apiName = game.teams.toLowerCase().replace(" vs ", " x ");
-        if (
-          apiName.includes(nome.split(" x ")[0]) &&
-          apiName.includes(nome.split(" x ")[1])
-        ) {
-          game.odds = `${o1}/${ox}/${o2}`;
-        }
+      this.games.forEach(g => {
+        const nome = g.teams.toLowerCase().replace("vs", "x");
+        if (nome.includes(a) && nome.includes(b)) g.odds = odds;
       });
     });
 
-    this.saveStorage();
-    this.renderToday();
+    this.saveToStorage();
+    this.renderGames();
+    alert("Odds inseridas com sucesso");
   }
 
-  /* ========= API ========= */
+  /* =========================
+     API
+  ========================= */
   async loadTodayGames() {
-    const today = new Date().toISOString().split("T")[0];
-    const res = await fetch(
-      `https://v3.football.api-sports.io/fixtures?date=${today}&timezone=America/Sao_Paulo`,
-      { headers: { "x-apisports-key": API_KEY } }
-    );
-    const data = await res.json();
+    try {
+      const hoje = new Date().toISOString().split("T")[0];
+      const r = await fetch(
+        `https://v3.football.api-sports.io/fixtures?date=${hoje}&timezone=America/Sao_Paulo`,
+        { headers: { "x-apisports-key": API_KEY } }
+      );
+      const d = await r.json();
+      if (d.response) this.processGames(d.response);
+    } catch (e) {
+      alert("Erro ao carregar jogos");
+    }
+  }
 
-    data.response.forEach(g => {
-      const id = g.fixture.id.toString();
+  processGames(lista) {
+    lista.forEach(g => {
+      const id = g.fixture.id;
       if (!this.games.has(id)) {
         this.games.set(id, {
           id,
           teams: `${g.teams.home.name} vs ${g.teams.away.name}`,
           time: this.formatTime(g.fixture.date),
           odds: "___/___/___",
-          apostei: "N",
-          acertei: "N",
           timestamp: new Date(g.fixture.date).getTime()
         });
       }
     });
-
-    this.saveStorage();
+    this.saveToStorage();
   }
 
-  /* ========= VIEW ========= */
-  renderToday() {
-    const container = document.getElementById("folderContent");
-    if (!container) return;
+  /* =========================
+     RENDER
+  ========================= */
+  renderGames() {
+    const area = document.getElementById("folderContent");
+    if (!area) return;
 
     let jogos = Array.from(this.games.values());
-
-    jogos.sort((a, b) => {
+    jogos.sort((a,b) => {
       if (a.odds !== "___/___/___" && b.odds === "___/___/___") return -1;
       if (a.odds === "___/___/___" && b.odds !== "___/___/___") return 1;
       return a.timestamp - b.timestamp;
     });
 
-    container.innerHTML = jogos.map(j => this.card(j)).join("");
-  }
-
-  card(j) {
-    return `
+    area.innerHTML = jogos.map(j => `
       <div class="game-card">
-        <div><b>${j.teams}</b> — ${j.time}</div>
-        <div>ODDs: <input value="${j.odds}" readonly></div>
-        <div>Apostar? ${j.apostei} | Acertei? ${j.acertei}</div>
-        <hr>
+        <b>${j.teams}</b> — ${j.time}<br>
+        Odds: ${j.odds}
       </div>
-    `;
+    `).join("");
   }
 
-  /* ========= UTILS ========= */
   formatTime(d) {
     return new Date(d).toLocaleTimeString("pt-BR", {
-      hour: "2-digit", minute: "2-digit"
+      hour:"2-digit", minute:"2-digit"
     });
   }
 
-  saveStorage() {
+  saveToStorage() {
     localStorage.setItem("betGames", JSON.stringify([...this.games]));
   }
 
-  loadStorage() {
+  loadFromStorage() {
     const s = localStorage.getItem("betGames");
     if (s) this.games = new Map(JSON.parse(s));
   }
 }
 
-const betManager = new BetManager();
+const betManager = new ProfessionalBetManager();
