@@ -2,48 +2,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Scanner Bet</title>
 </head>
 <body>
 
-<!-- CAIXA SIMPLES PRA COLAR (não estilizada) -->
-<textarea id="colarTexto" placeholder="COLAR AQUI O TEXTO DO GOOGLE LENS"
-rows="6" style="width:100%;"></textarea>
+<h3>COLAR TEXTO DO GOOGLE LENS</h3>
+
+<textarea id="texto"
+placeholder="Cole aqui os jogos e odds escaneados"
+rows="6"
+style="width:100%;font-size:16px;"></textarea>
 
 <br><br>
+
 <button onclick="processar()">PROCESSAR</button>
 
 <hr>
 
+<h3>RESULTADO</h3>
 <div id="resultado"></div>
 
 <script>
 function processar() {
-  const texto = document.getElementById('colarTexto').value;
-  if (!texto) return;
-
-  const linhas = texto.split('\n');
+  const texto = document.getElementById("texto").value;
+  const linhas = texto.split("\n");
 
   let comOdd = [];
   let semOdd = [];
 
   linhas.forEach(linha => {
-    const odd = linha.match(/(\d+\.\d+)/);
-    if (odd) {
+    if (linha.match(/\d+\.\d+/)) {
       comOdd.push(linha);
     } else {
       semOdd.push(linha);
     }
   });
 
-  const resultado = document.getElementById('resultado');
-  resultado.innerHTML = '';
+  const res = document.getElementById("resultado");
+  res.innerHTML = "";
 
   [...comOdd, ...semOdd].forEach(l => {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.textContent = l;
-    resultado.appendChild(div);
+    res.appendChild(div);
   });
 }
 </script>
