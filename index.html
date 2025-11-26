@@ -2,103 +2,141 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Scanner de Apostas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b0b0b;
-      color: #ffffff;
-      text-align: center;
-    }
-
-    h1 {
-      margin-top: 20px;
-    }
-
-    textarea {
-      width: 90%;
-      max-width: 600px;
-      height: 140px;
-      margin-top: 20px;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      outline: none;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 14px 30px;
-      font-size: 16px;
-      background: #1db954;
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .result {
-      margin-top: 25px;
-      text-align: left;
-      width: 90%;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .ok {
-      color: #1db954;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALXbet - Premium Betting Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Pequeno ajuste apenas para posicionar a caixa COLAR ao lado do título HOJE sem mudar tema */
+      .folder-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      #scannerBoxInline { max-width: 360px; width: 100%; }
+      #scannerBoxInline textarea { width: 100%; height: 72px; font-size: 13px; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); }
+      #scannerBoxInline button { width:100%; margin-top:6px; padding:8px; border-radius:6px; background:#ffd700; color:#000; font-weight:700; border:none; cursor:pointer; }
+      @media (max-width: 1024px) {
+        /* em mobile, a caixa vai abaixo do título */
+        .folder-header { flex-direction: column; align-items: stretch; }
+      }
+    </style>
 </head>
 <body>
+    <!-- BACKGROUND LUXUOSO -->
+    <div class="premium-bg"></div>
+    <div class="gold-overlay"></div>
 
-  <h1>Scanner de Apostas</h1>
-  <p>Colar texto do Google Lens</p>
+    <div class="main-header">
+        <div class="logo-container">
+            <div class="logo-wrapper">
+                <h1 class="main-logo">ALX<span>BET</span></h1>
+                <div class="logo-subtitle">PREMIUM BETTING SUITE</div>
+            </div>
+            <div class="header-graphic">
+                <div class="graphic-element">🎰</div>
+                <div class="graphic-element">💰</div>
+                <div class="graphic-element">⚡</div>
+            </div>
+        </div>
+    </div>
 
-  <!-- TEXTAREA (era isso que faltava) -->
-  <textarea id="inputText" placeholder="Exemplo:
-Atlético x Inter
-2.45/3.40/2.87"></textarea>
+    <div class="dashboard">
+        <!-- COLUNA ESQUERDA - JOGOS EM ANDAMENTO -->
+        <div class="left-column">
+            <div class="section-title">
+                <div class="title-icon">🔥</div>
+                <h2>JOGOS AO VIVO</h2>
+            </div>
+            <div class="live-games-container">
+                <div class="live-games" id="liveGames">
+                    <div class="no-live-games">
+                        <div class="empty-state">
+                            <div class="empty-icon">⏰</div>
+                            <h3>Nenhum jogo ao vivo</h3>
+                            <p>Os jogos em andamento aparecerão aqui automaticamente</p>
+                            <div class="live-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <br>
-  <button onclick="processar()">PROCESSAR</button>
+        <!-- COLUNA CENTRAL - ÁREA PRINCIPAL -->
+        <div class="center-column">
+            <div class="welcome-section" id="welcomeSection">
+                <div class="hero-section">
+                    <div class="hero-content">
+                        <h3>CONTROLE TOTAL DAS SUAS APOSTAS</h3>
+                        <p>Sistema profissional de análise e gestão de betting</p>
+                        <button class="premium-btn" onclick="betManager.showTodayGames()">
+                            <span class="btn-icon">🎯</span>
+                            VER JOGOS DE HOJE
+                        </button>
+                    </div>
+                    <div class="hero-graphic">
+                        <div class="graphic-man">📱💵</div>
+                        <div class="money-stack">💰💰💰</div>
+                    </div>
+                </div>
+            </div>
 
-  <div class="result" id="output"></div>
+            <div class="current-folder" id="currentFolder" style="display: none;">
+                <div class="folder-header">
+                    <h2 id="folderTitle">HOJE</h2>
 
-  <script>
-    function processar() {
-      const texto = document.getElementById("inputText").value;
-      const linhas = texto.split(/\n/);
-      const output = document.getElementById("output");
-      output.innerHTML = "";
+                    <!-- CAIXA "COLAR" AO LADO DE HOJE -->
+                    <div id="scannerBoxInline" aria-label="Caixa colar scanner">
+                      <textarea id="scannerInput" placeholder="Colar aqui o texto do Google Lens (ex: Time A x Time B \n2.45/3.40/2.87)"></textarea>
+                      <button id="scannerBtn" onclick="processarScanner()">COLAR / PROCESSAR</button>
+                      <div id="scannerMsg" style="font-size:12px;color:#ffd700;margin-top:6px;"></div>
+                    </div>
 
-      linhas.forEach(linha => {
-        if (linha.match(/\d+\.\d+\/\d+\.\d+\/\d+\.\d+/)) {
-          const div = document.createElement("div");
-          div.className = "ok";
-          div.innerText = "✅ " + linha.trim();
-          output.appendChild(div);
-        }
-      });
+                    <div class="folder-actions">
+                        <button class="back-btn" onclick="betManager.showWelcomeView()">← Voltar</button>
+                    </div>
+                </div>
+                <div class="folder-content" id="folderContent"></div>
+            </div>
+        </div>
 
-      if (output.innerHTML === "") {
-        output.innerHTML = "<p>Nenhuma odd válida encontrada.</p>";
-      }
-    }
-  </script>
+        <!-- COLUNA DIREITA - PERÍODO -->
+        <div class="right-column">
+            <div class="section-title">
+                <div class="title-icon">📊</div>
+                <h2>PERÍODO</h2>
+            </div>
+            <div class="period-nav">
+                <div class="period-btn" onclick="betManager.showYearlyFolders()">
+                    <span>ANO</span>
+                </div>
+                <div class="period-btn" onclick="betManager.showMonthlyFolders()">
+                    <span>MÊS</span>
+                </div>
+                <div class="period-btn" onclick="betManager.showDailyFolders()">
+                    <span>DIA</span>
+                </div>
+            </div>
+            <div class="folders-container" id="periodFolders">
+                <div class="empty-folders">
+                    <div class="folder-icon">📁</div>
+                    <p>Selecione um período</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- ÁREA DE CAMPEONATOS -->
+    <div class="championships-section">
+        <div class="section-header">
+            <div class="title-icon">🏆</div>
+            <h2>CAMPEONATOS PREMIUM</h2>
+        </div>
+        <div class="championships-grid" id="championshipsGrid">
+            <div class="loading-championships">
+                <div class="loading-spinner"></div>
+                <p>Carregando campeonatos...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
