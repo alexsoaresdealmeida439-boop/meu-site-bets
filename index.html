@@ -8,19 +8,18 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      /* Pequeno ajuste apenas para posicionar a caixa COLAR ao lado do título HOJE sem mudar tema */
+      /* Ajustes para caixa "COLAR" sem alterar visual */
       .folder-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
       #scannerBoxInline { max-width: 360px; width: 100%; }
-      #scannerBoxInline textarea { width: 100%; height: 72px; font-size: 13px; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); }
+      #scannerBoxInline textarea { width: 100%; height: 72px; font-size: 13px; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background: #0f0f0f; color: #fff; }
       #scannerBoxInline button { width:100%; margin-top:6px; padding:8px; border-radius:6px; background:#ffd700; color:#000; font-weight:700; border:none; cursor:pointer; }
+      #scannerMsg { font-size:12px; color:#ffd700; margin-top:6px; min-height:16px; }
       @media (max-width: 1024px) {
-        /* em mobile, a caixa vai abaixo do título */
         .folder-header { flex-direction: column; align-items: stretch; }
       }
     </style>
 </head>
 <body>
-    <!-- BACKGROUND LUXUOSO -->
     <div class="premium-bg"></div>
     <div class="gold-overlay"></div>
 
@@ -39,7 +38,6 @@
     </div>
 
     <div class="dashboard">
-        <!-- COLUNA ESQUERDA - JOGOS EM ANDAMENTO -->
         <div class="left-column">
             <div class="section-title">
                 <div class="title-icon">🔥</div>
@@ -59,7 +57,6 @@
             </div>
         </div>
 
-        <!-- COLUNA CENTRAL - ÁREA PRINCIPAL -->
         <div class="center-column">
             <div class="welcome-section" id="welcomeSection">
                 <div class="hero-section">
@@ -84,9 +81,9 @@
 
                     <!-- CAIXA "COLAR" AO LADO DE HOJE -->
                     <div id="scannerBoxInline" aria-label="Caixa colar scanner">
-                      <textarea id="scannerInput" placeholder="Colar aqui o texto do Google Lens (ex: Time A x Time B \n2.45/3.40/2.87)"></textarea>
+                      <textarea id="scannerInput" placeholder="Colar aqui o texto do Google Lens (ex: Time A x Time B ↵ 2.45/3.40/2.87)"></textarea>
                       <button id="scannerBtn" onclick="processarScanner()">COLAR / PROCESSAR</button>
-                      <div id="scannerMsg" style="font-size:12px;color:#ffd700;margin-top:6px;"></div>
+                      <div id="scannerMsg"></div>
                     </div>
 
                     <div class="folder-actions">
@@ -97,22 +94,15 @@
             </div>
         </div>
 
-        <!-- COLUNA DIREITA - PERÍODO -->
         <div class="right-column">
             <div class="section-title">
                 <div class="title-icon">📊</div>
                 <h2>PERÍODO</h2>
             </div>
             <div class="period-nav">
-                <div class="period-btn" onclick="betManager.showYearlyFolders()">
-                    <span>ANO</span>
-                </div>
-                <div class="period-btn" onclick="betManager.showMonthlyFolders()">
-                    <span>MÊS</span>
-                </div>
-                <div class="period-btn" onclick="betManager.showDailyFolders()">
-                    <span>DIA</span>
-                </div>
+                <div class="period-btn" onclick="betManager.showYearlyFolders()"><span>ANO</span></div>
+                <div class="period-btn" onclick="betManager.showMonthlyFolders()"><span>MÊS</span></div>
+                <div class="period-btn" onclick="betManager.showDailyFolders()"><span>DIA</span></div>
             </div>
             <div class="folders-container" id="periodFolders">
                 <div class="empty-folders">
@@ -123,7 +113,6 @@
         </div>
     </div>
 
-    <!-- ÁREA DE CAMPEONATOS -->
     <div class="championships-section">
         <div class="section-header">
             <div class="title-icon">🏆</div>
