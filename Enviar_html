@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Dados - ALXBET</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="premium-bg"></div>
+    <div class="gold-overlay"></div>
+
+    <div class="main-header">
+        <div class="logo-container">
+            <div class="logo-wrapper">
+                <h1 class="main-logo">ALX<span>BET</span></h1>
+                <div class="logo-subtitle">ENVIAR DADOS SCANEADOS</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard" style="grid-template-columns: 1fr; min-height: 80vh;">
+        <div class="center-column">
+            <div class="welcome-section">
+                <div style="max-width: 600px; width: 100%;">
+                    <h3 style="text-align: center; margin-bottom: 30px;">📱 ENVIAR DADOS SCANEADOS</h3>
+                    
+                    <!-- ÁREA DE TEXTO -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="color: #ffd700; display: block; margin-bottom: 10px;">
+                            Cole o texto do Google Lens:
+                        </label>
+                        <textarea 
+                            id="textoScaneado" 
+                            placeholder="Ex: Flamengo x São Paulo 2.10/3.50/3.20"
+                            style="width: 100%; height: 150px; padding: 15px; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; border-radius: 10px; color: white; font-size: 16px;"
+                        ></textarea>
+                    </div>
+
+                    <!-- BOTÃO PROCESSAR -->
+                    <button 
+                        id="btnProcessar"
+                        style="background: linear-gradient(135deg, #ffd700 0%, #ff6b00 100%); color: #0c0c0c; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 20px;"
+                    >
+                        🔍 PROCESSAR TEXTO
+                    </button>
+
+                    <!-- PREVIEW DOS DADOS -->
+                    <div id="previewDados" style="display: none;">
+                        <h4 style="color: #ffd700; margin-bottom: 15px;">📋 DADOS IDENTIFICADOS:</h4>
+                        <div id="dadosProcessados" style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 10px; border: 1px solid #ffd700;"></div>
+                        
+                        <button 
+                            id="btnEnviar"
+                            style="background: linear-gradient(135deg, #00ff88 0%, #0099ff 100%); color: #0c0c0c; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px;"
+                        >
+                            ✅ ENVIAR PARA O SITE
+                        </button>
+                    </div>
+
+                    <!-- VOLTAR -->
+                    <button 
+                        onclick="window.location.href = 'index.html'"
+                        style="background: transparent; color: #ff6b00; border: 1px solid #ff6b00; padding: 12px 25px; border-radius: 10px; font-size: 14px; cursor: pointer; width: 100%; margin-top: 15px;"
+                    >
+                        ← VOLTAR AO SITE PRINCIPAL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase config - Vamos configurar depois
+        const firebaseConfig = {
+            // Sua configuração Firebase aqui
+        };
+
+        document.getElementById('btnProcessar').addEventListener('click', processarTexto);
+        document.getElementById('btnEnviar').addEventListener('click', enviarParaFirebase);
+
+        function processarTexto() {
+            const texto = document.getElementById('textoScaneado').value;
+            const dados = extrairDados(texto);
+            
+            if (dados) {
+                document.getElementById('dadosProcessados').innerHTML = `
+                    <p><strong>Time Casa:</strong> ${dados.timeCasa}</p>
+                    <p><strong>Time Visitante:</strong> ${dados.timeVisitante}</p>
+                    <p><strong>Odds:</strong> ${dados.odds}</p>
+                `;
+                document.getElementById('previewDados').style.display = 'block';
+            } else {
+                alert('Não consegui identificar os dados. Formato esperado: "Time1 x Time2 odd1/odd2/odd3"');
+            }
+        }
+
+        function extrairDados(texto) {
+            // Exemplo: "Flamengo x São Paulo 2.10/3.50/3.20"
+            const regex = /(.+)\s+x\s+(.+)\s+([\d\.]+\/[\d\.]+\/[\d\.]+)/;
+            const match = texto.match(regex);
+            
+            if (match) {
+                return {
+                    timeCasa: match[1].trim(),
+                    timeVisitante: match[2].trim(),
+                    odds: match[3].trim()
+                };
+            }
+            return null;
+        }
+
+        function enviarParaFirebase() {
+            // Aqui vamos integrar com Firebase depois
+            alert('Dados processados! Em breve vamos conectar com o Firebase.');
+        }
+    </script>
+</body>
+</html>
