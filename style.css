@@ -1,346 +1,139 @@
 
-/* ====== MODAL JOGOS DE HOJE - ESTILO IDÊNTICO À HOME ====== */
-.jogos-hoje-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(5, 15, 5, 0.98);
-    z-index: 1000;
-    backdrop-filter: blur(15px);
+/* SEÇÃO JOGOS DE HOJE - DESIGN IDÊNTICO À FOTO */
+.today-games-section {
+    margin: 20px 0;
+    padding: 0 15px;
 }
 
-.modal-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 95%;
-    max-width: 1400px;
-    height: 90vh;
-    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-    border-radius: 0;
-    border: 3px solid;
-    border-image: linear-gradient(45deg, #0a5c0a, #1e7a1e, #2e8b2e) 1;
-    box-shadow: 0 0 80px rgba(10, 92, 10, 0.6);
-    overflow: hidden;
+.today-games-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 100%;
 }
 
-/* HEADER IDÊNTICO AO DA HOME */
-.modal-header {
-    position: relative;
-    padding: 30px 40px;
-    background: linear-gradient(135deg, 
-        rgba(10, 10, 10, 0.95) 0%, 
-        rgba(26, 26, 46, 0.92) 50%, 
-        rgba(22, 33, 62, 0.9) 100%);
-    border-bottom: 3px solid;
-    border-image: linear-gradient(45deg, #0a5c0a, #1e7a1e, #2e8b2e) 1;
+.today-game-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.modal-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 3.5rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 50%, #2e8b2e 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 40px rgba(10, 92, 10, 0.5);
-    letter-spacing: 3px;
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.game-teams {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.team-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.team-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    flex: 1;
+}
+
+.team-vs {
+    font-size: 10px;
+    color: #999;
+    margin: 0 8px;
+}
+
+.odds-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.odd-value {
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    min-width: 45px;
     text-align: center;
+}
+
+.odd-value:first-child {
+    color: #0a5c0a;
+    background: rgba(10, 92, 10, 0.05);
+    border-color: rgba(10, 92, 10, 0.2);
+}
+
+.game-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.game-time {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0a5c0a;
+}
+
+.game-markets {
+    font-size: 11px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.game-markets::after {
+    content: "▾";
+    font-size: 14px;
+    color: #0a5c0a;
+}
+
+/* ORGANIZAÇÃO CRONOLÓGICA - MAIS ANTIGOS PRIMEIRO */
+.today-games-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* HEADER DA SEÇÃO */
+.today-games-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 0 5px;
+}
+
+.today-games-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
     margin: 0;
 }
 
-.modal-subtitle {
-    font-size: 1.3rem;
-    color: #0a5c0a;
-    font-weight: 300;
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    text-align: center;
-    margin-top: 15px;
-}
-
-.close-modal {
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    background: none;
-    border: none;
-    color: #0a5c0a;
-    font-size: 3rem;
-    cursor: pointer;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.close-modal:hover {
-    background: rgba(10, 92, 10, 0.2);
-    transform: scale(1.1);
-}
-
-/* CONTEÚDO CENTRAL - ESTILO PREMIUM */
-.modal-content {
-    padding: 40px;
-    height: calc(90vh - 180px);
-    overflow-y: auto;
-    background: transparent;
-}
-
-/* GRID DE JOGOS - CARDS GRANDES E CENTRALIZADOS */
-.jogos-grid-premium {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-    gap: 30px;
-    justify-content: center;
-    align-items: start;
-}
-
-.jogo-card-premium {
-    background: linear-gradient(135deg, rgba(10, 92, 10, 0.15) 0%, rgba(30, 122, 30, 0.1) 100%);
-    border: 2px solid rgba(10, 92, 10, 0.4);
-    border-radius: 20px;
-    padding: 35px;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    min-height: 300px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.jogo-card-premium::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        radial-gradient(circle at 20% 80%, rgba(10, 92, 10, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(30, 122, 30, 0.08) 0%, transparent 50%);
-    z-index: -1;
-}
-
-/* HEADER DO JOGO */
-.jogo-header-premium {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid;
-    border-image: linear-gradient(90deg, #0a5c0a, transparent) 1;
-}
-
-.campeonato-premium {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #0a5c0a;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.jogo-status-premium {
-    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 100%);
-    color: white;
-    padding: 8px 20px;
-    border-radius: 25px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.jogo-status-premium.live {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-}
-
-/* TIMES - LETRAS BEM MAIORES E CENTRALIZADAS */
-.jogo-times-premium {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 40px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.time-premium {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-.time-escudo-premium {
-    width: 80px;
-    height: 80px;
-    background: rgba(10, 92, 10, 0.3);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    border: 3px solid #0a5c0a;
-    box-shadow: 0 0 20px rgba(10, 92, 10, 0.3);
-}
-
-.time-nome-premium {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-align: center;
-}
-
-.vs-premium {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: #0a5c0a;
-    text-shadow: 0 0 10px rgba(10, 92, 10, 0.5);
-}
-
-/* PLACAR - BEM MAIOR E CENTRALIZADO */
-.placar-premium {
-    text-align: center;
-    margin: 25px 0;
-}
-
-.placar-numeros-premium {
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: #0a5c0a;
-    text-shadow: 0 0 15px rgba(10, 92, 10, 0.5);
-    margin-bottom: 10px;
-}
-
-.placar-tempo-premium {
-    font-size: 1.3rem;
-    color: #8899cc;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-/* ODDS - MAIORES E MELHOR VISUALIZADAS */
-.jogo-odds-premium {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-top: 30px;
-}
-
-.odd-btn-premium {
-    background: linear-gradient(135deg, rgba(10, 92, 10, 0.3) 0%, rgba(30, 122, 30, 0.2) 100%);
-    border: 2px solid #0a5c0a;
-    border-radius: 15px;
-    padding: 20px 15px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: #ffffff;
-}
-
-.odd-btn-premium:hover {
-    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 100%);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(10, 92, 10, 0.4);
-}
-
-.odd-valor-premium {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #0a5c0a;
-    margin-bottom: 8px;
-}
-
-.odd-tipo-premium {
-    font-size: 1.1rem;
-    color: #8899cc;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* DATA E ESTATÍSTICAS */
-.jogos-meta-premium {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
-    padding: 25px;
-    background: rgba(10, 92, 10, 0.15);
-    border-radius: 15px;
-    border: 2px solid rgba(10, 92, 10, 0.3);
-}
-
-.data-hoje-premium {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #0a5c0a;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.total-jogos-premium {
-    font-size: 1.3rem;
-    color: #8899cc;
-    font-weight: 600;
-}
-
-/* SCROLLBAR ESTILIZADA */
-.modal-content::-webkit-scrollbar {
-    width: 12px;
-}
-
-.modal-content::-webkit-scrollbar-track {
-    background: rgba(10, 92, 10, 0.1);
-    border-radius: 6px;
-}
-
-.modal-content::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #0a5c0a 0%, #1e7a1e 100%);
-    border-radius: 6px;
-}
-
-.modal-content::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #1e7a1e 0%, #2e8b2e 100%);
-}
-
-/* RESPONSIVO */
-@media (max-width: 768px) {
-    .modal-container {
-        width: 98%;
-        height: 95vh;
-    }
-    
-    .modal-title {
-        font-size: 2.5rem;
-    }
-    
-    .jogos-grid-premium {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .jogo-times-premium {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .time-nome-premium {
-        font-size: 1.5rem;
-    }
-    
-    .placar-numeros-premium {
-        font-size: 2.5rem;
-    }
+.today-date {
+    font-size: 12px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 12px;
 }
