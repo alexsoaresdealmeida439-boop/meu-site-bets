@@ -1,78 +1,67 @@
 
-* {
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
+const input = document.getElementById("scannerInput");
+const processBtn = document.getElementById("processBtn");
+const insertBtn = document.getElementById("insertBtn");
+const preview = document.getElementById("gamesPreview");
 
-body {
-  margin: 0;
-  background-color: #0f2a1d;
-  color: #ffffff;
-}
+let parsedGames = [];
 
-.container {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 20px;
-}
+processBtn.onclick = () => {
+  preview.innerHTML = "";
+  parsedGames = [];
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #ffffff;
-}
+  input.value.split("\n").forEach(line => {
+    const m = line.match(/(.+?)\s+x\s+(.+?)\s+\|\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/i);
+    if(!m) return;
 
-textarea {
-  width: 100%;
-  height: 150px;
-  padding: 15px;
-  border-radius: 6px;
-  border: none;
-  resize: vertical;
-  font-size: 14px;
-}
+    parsedGames.push({
+      home:m[1],
+      away:m[2],
+      h:m[3],
+      d:m[4],
+      a:m[5]
+    });
 
-button {
-  margin-top: 15px;
-  padding: 12px 25px;
-  background-color: #ffffff;
-  color: #0f2a1d;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  font-weight: bold;
-}
+    preview.appendChild(cardHTML(m[1],m[2],m[3],m[4],m[5]));
+  });
+};
 
-button:hover {
-  opacity: 0.9;
-}
+insertBtn.onclick = () => {
+  alert(parsedGames.length + " jogos inseridos.");
+  input.value = "";
+};
 
-#gamesContainer {
-  margin-top: 30px;
-}
+function cardHTML(h,a,o1,o2,o3){
+  const card = document.createElement("div");
+  card.className="game-card";
 
-.game-card {
-  background-color: #163b2a;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-}
+  card.innerHTML=`
+    <strong>${h} x ${a}</strong>
+    <div class="odds">
+      <div class="odd">H ${o1}</div>
+      <div class="odd">D ${o2}</div>
+      <div class="odd">A ${o3}</div>
+    </div>
+    <div class="actions" style="display:none">
+      <button class="copy">Copiar</button>
+      <button class="delete">Apagar</button>
+    </div>
+  `;
 
-.game-card h3 {
-  margin: 0 0 10px 0;
-  color: #ffffff;
-}
+  card.onclick = () => {
+    const actions = card.querySelector(".actions");
+    actions.style.display = actions.style.display==="none"?"flex":"none";
+  };
 
-.odds {
-  display: flex;
-  gap: 10px;
-}
+  card.querySelector(".delete").onclick = e=>{
+    e.stopPropagation();
+    card.remove();
+  };
 
-.odd {
-  background-color: #ffffff;
-  color: #0f2a1d;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-weight: bold;
+  card.querySelector(".copy").onclick = e=>{
+    e.stopPropagation();
+    navigator.clipboard.writeText(`${h} x ${a} | ${o1} ${o2} ${o3}`);
+  };
+
+  return card;
 }
