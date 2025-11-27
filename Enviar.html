@@ -1,75 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Scanner Bet</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Enviar - Jogos & ODDs</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+  <header class="topbar">
+    <h1>Enviar / Importar</h1>
+    <a href="index.html" class="tertiary">Voltar</a>
+  </header>
+  <main class="container">
+    <section>
+      <h2>Colar texto (alternativa)</h2>
+      <textarea id="paste-alt" placeholder="Cole aqui e clique Processar"></textarea>
+      <div class="modal-actions">
+        <button id="process-alt" class="primary">Processar</button>
+        <button id="save-alt" class="secondary">Salvar encontrados</button>
+      </div>
+      <div id="alt-status"></div>
+    </section>
+    <section>
+      <h2>Importar JSON de backup</h2>
+      <input type="file" id="import-file" accept=".json" />
+    </section>
+  </main>
 
-<!-- ⚠️ SEU LAYOUT EXISTENTE CONTINUA IGUAL
-     Tudo abaixo é APENAS lógica -->
-  
-<textarea id="entradaTexto" style="display:none;"></textarea>
-
-<script>
-/*
-  COMO USAR (não muda layout):
-  1) Cole o texto do Google Lens em QUALQUER campo do site
-  2) Execute processarTexto(textoColado)
-*/
-
-// Função principal
-function processarTexto(texto) {
-  const linhas = texto.split('\n');
-
-  let comOdd = [];
-  let semOdd = [];
-
-  linhas.forEach(linha => {
-    const oddMatch = linha.match(/(\d+\.\d+)/);
-
-    if (oddMatch) {
-      comOdd.push({
-        texto: linha,
-        odd: oddMatch[1]
-      });
-    } else {
-      semOdd.push({
-        texto: linha,
-        odd: null
-      });
-    }
-  });
-
-  renderizarResultados([...comOdd, ...semOdd]);
-}
-
-// Renderização simples (não muda estilo)
-function renderizarResultados(lista) {
-  let container = document.getElementById('resultado');
-
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'resultado';
-    document.body.appendChild(container);
-  }
-
-  container.innerHTML = '';
-
-  lista.forEach(item => {
-    const div = document.createElement('div');
-    div.textContent = item.texto;
-    container.appendChild(div);
-  });
-}
-
-// ATALHO: colar direto da área de transferência
-document.addEventListener('paste', function (e) {
-  const texto = (e.clipboardData || window.clipboardData).getData('text');
-  processarTexto(texto);
-});
-</script>
-
+  <script>
+    // pequeno script para comunicação com localStorage (mesma estrutura do index)
+    document.getElementById('process-alt').addEventListener('click', () => {
+      const txt = document.getElementById('paste-alt').value;
+      localStorage.setItem('_last_paste', txt);
+      alert('Texto salvo localmente. Volte para Home e abra Inserir Jogos para processar (o app carrega o último texto colado).');
+    });
+    document.getElementById('import-file').addEventListener('change', ev => {
+      const f = ev.target.files[0];
+      if(!f) return;
+      const r = new FileReader();
+      r.onload = e => {
+        try{
+          const obj = JSON.parse(e.target.result);
+          localStorage.setItem('games', JSON.stringify(obj));
+          alert('Importado com sucesso!');
+        }catch(err){
+          alert('JSON inválido.');
+        }
+      };
+      r.readAsText(f);
+    });
+  </script>
 </body>
 </html>
