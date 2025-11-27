@@ -22,6 +22,17 @@
     <section id="home-list">
       <p class="hint">Nenhum jogo selecionado. Use "Inserir jogos" para colar dados ou "Jogos de hoje".</p>
     </section>
+    
+    <!-- Área de pastas boneca/marioresca -->
+    <section id="folders-section" class="folders-container hidden">
+      <div class="folders-nav">
+        <button class="folder-btn" data-folder="root">📁 Todos os Jogos</button>
+        <button class="folder-btn" data-folder="year">📁 Por Ano</button>
+        <button class="folder-btn" data-folder="month">📁 Por Mês</button>
+        <button class="folder-btn" data-folder="day">📁 Por Dia</button>
+      </div>
+      <div id="folders-content" class="folders-content"></div>
+    </section>
   </main>
 
   <!-- Modal: Inserir Jogos (30% central) -->
@@ -39,12 +50,25 @@
     </div>
   </div>
 
-  <!-- Modal: Ver mais jogos (75% area) -->
+  <!-- Modal: Preview Jogos Escaneados (80% area) -->
+  <div id="modal-preview" class="modal hidden">
+    <div class="modal-card modal-80">
+      <button class="close-btn red" id="close-preview">✕</button>
+      <h2>Jogos Identificados - Revise antes de salvar</h2>
+      <div id="preview-list" class="preview-container"></div>
+      <div class="modal-actions">
+        <button id="btn-confirm-save" class="primary">Confirmar e Salvar</button>
+        <button id="btn-cancel-preview" class="secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Ver mais jogos (80% area) -->
   <div id="modal-more" class="modal hidden">
-    <div class="modal-card modal-75">
-      <button class="close-btn" id="close-more">✕</button>
-      <h2>Jogos do dia</h2>
-      <div id="more-list"></div>
+    <div class="modal-card modal-80">
+      <button class="close-btn red" id="close-more">✕</button>
+      <h2>Todos os Jogos em Andamento</h2>
+      <div id="more-list" class="games-container"></div>
     </div>
   </div>
 
@@ -64,6 +88,12 @@
       <h3>Jogos não encontrados</h3>
       <ul id="notfound-list"></ul>
     </div>
+  </div>
+
+  <!-- Context Menu para Editar/Apagar -->
+  <div id="context-menu" class="context-menu hidden">
+    <button class="context-btn" id="btn-edit-game">✏️ Editar</button>
+    <button class="context-btn delete" id="btn-delete-game">🗑️ Apagar</button>
   </div>
 
   <footer class="footer">
