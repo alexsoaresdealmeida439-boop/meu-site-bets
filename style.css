@@ -42,6 +42,12 @@ main{padding:20px}
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   padding:12px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;
   border-left:4px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.card-game:hover{
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border-left-color: rgba(255,255,255,0.1);
 }
 .card-game .meta{font-size:13px; color:var(--muted)}
 
@@ -55,6 +61,7 @@ main{padding:20px}
 /* sizes */
 .modal-30{width:30%; min-width:320px}
 .modal-75{width:75%; min-width:420px; max-height:85vh; overflow:auto}
+.modal-80{width:80%; min-width:420px; max-height:85vh; overflow:auto}
 .modal-10{width:10%; min-width:220px}
 .small{width:40%; min-width:260px}
 
@@ -70,3 +77,66 @@ textarea{min-height:140px}
 .result{margin-top:6px; color:var(--muted); font-size:14px}
 
 .small ul{max-height:260px; overflow:auto; padding-left:18px}
+
+/* Pastas boneca/marioresca */
+.folders-container{margin-top:20px; padding:15px; background:rgba(255,255,255,0.02); border-radius:10px; border:1px solid rgba(255,255,255,0.03)}
+.folders-nav{display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap}
+.folder-btn{padding:8px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:var(--muted); font-size:13px; cursor:pointer}
+.folder-btn:hover{background:rgba(255,255,255,0.08)}
+.folders-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px}
+.folder-category{background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05)}
+.folder-category h4{margin:0 0 10px 0; font-size:14px; color:var(--accent)}
+.folder-item{display:flex; justify-content:space-between; align-items:center; padding:8px; background:rgba(255,255,255,0.03); border-radius:6px; margin-bottom:5px; cursor:pointer; transition:all 0.2s ease}
+.folder-item:hover{background:rgba(255,255,255,0.06)}
+.folder-item small{color:var(--muted); font-size:11px}
+
+/* Context Menu */
+.context-menu{
+  position:fixed; background:var(--green-dark-2); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:5px; z-index:100; 
+  box-shadow:0 4px 12px rgba(0,0,0,0.3); min-width:120px;
+}
+.context-btn{
+  display:block; width:100%; padding:8px 12px; background:transparent; color:var(--white); border:none; border-radius:4px; 
+  text-align:left; font-size:13px; cursor:pointer;
+}
+.context-btn:hover{background:rgba(255,255,255,0.1)}
+.context-btn.delete{color:#ff6b6b}
+.context-btn.delete:hover{background:rgba(255,0,0,0.1)}
+
+/* Preview Modal Styles */
+.preview-container{max-height:60vh; overflow-y:auto; margin:15px 0}
+.preview-item{border-left:4px solid rgba(255,255,255,0.1); margin-bottom:12px; padding:12px; background:rgba(255,255,255,0.02)}
+.preview-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+.confidence-badge{
+  padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;
+}
+.confidence-badge.high{background:#059669; color:white}
+.confidence-badge.medium{background:#d97706; color:white}
+.confidence-badge.low{background:#dc2626; color:white}
+.preview-actions{display:flex; gap:8px; margin-top:10px}
+.btn-edit-preview, .btn-delete-preview{
+  padding:4px 8px; font-size:11px; border-radius:4px; border:none; cursor:pointer;
+}
+.btn-edit-preview{background:rgba(59,130,246,0.2); color:#60a5fa}
+.btn-delete-preview{background:rgba(220,38,38,0.2); color:#f87171}
+.btn-edit-preview:hover{background:rgba(59,130,246,0.3)}
+.btn-delete-preview:hover{background:rgba(220,38,38,0.3)}
+
+/* Games Container */
+.games-container{max-height:70vh; overflow-y:auto; padding-right:10px}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.05); border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1); border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+
+/* Responsividade */
+@media (max-width: 768px){
+  .topbar{flex-direction:column; gap:15px; align-items:flex-start}
+  .controls{width:100%; justify-content:flex-start; flex-wrap:wrap}
+  .modal-30, .modal-75, .modal-80, .modal-10{width:95%; min-width:unset}
+  .folders-nav{flex-direction:column}
+  .folders-grid{grid-template-columns:1fr}
+  .card-game{flex-direction:column; align-items:flex-start; gap:8px}
+}
