@@ -28,11 +28,13 @@
   </main>
 
   <script>
-    // pequeno script para comunicação com localStorage (mesma estrutura do index)
     document.getElementById('process-alt').addEventListener('click', () => {
       const txt = document.getElementById('paste-alt').value;
       localStorage.setItem('_last_paste', txt);
-      alert('Texto salvo localmente. Volte para Home e abra Inserir Jogos para processar (o app carrega o último texto colado).');
+      alert('Texto salvo localmente. Volte para Home e abra Inserir Jogos para processar.');
+    });
+    document.getElementById('save-alt').addEventListener('click', async () => {
+      alert('Use o botão "Processar" acima para enviar ao Firestore pela Home.');
     });
     document.getElementById('import-file').addEventListener('change', ev => {
       const f = ev.target.files[0];
@@ -42,7 +44,7 @@
         try{
           const obj = JSON.parse(e.target.result);
           localStorage.setItem('games', JSON.stringify(obj));
-          alert('Importado com sucesso!');
+          alert('Importado localmente com sucesso!');
         }catch(err){
           alert('JSON inválido.');
         }
