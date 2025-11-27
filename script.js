@@ -1,6 +1,9 @@
-// script.js COMPLETO — revisado, ampliado e com novos recursos solicitados.
+// script.js - versão cliente (frontend) que implementa as funcionalidades requisitadas.
+// Armazenamento: localStorage com chave "games" em formato aninhado { yyyy: { mm: { dd: [gameObjects...] } } }
+// Game object: { id, name, teams: "A x B", datetime: ISO, odds: [numbers], meta: { raw } }
 
 (function(){
+  // utilidades
   const $ = sel => document.querySelector(sel);
   const qs = sel => Array.from(document.querySelectorAll(sel));
 
@@ -14,84 +17,110 @@
     }catch(e){ return {}; }
   }
 
+  // normaliza texto pra comparação (remove acentos, lower)
   function normalizeName(s){
-    return s.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g,"")
-            .toLowerCase()
-            .replace(/[^a-z0-9\sxvs:-]/g,'')
-            .trim();
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9\sxvs:-]/g,'').trim();
   }
 
   function isoDateParts(dt){
     const d = new Date(dt);
-    return {
-      yyyy: String(d.getFullYear()),
-      mm: String(d.getMonth()+1).padStart(2,'0'),
-      dd: String(d.getDate()).padStart(2,'0')
-    };
-  }
-
-  function generateId(game){
-    return btoa((game.teams+"|"+game.datetime).toLowerCase()).replace(/=/g,'');
+    const yyyy = String(d.getFullYear());
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return { yyyy, mm, dd };
   }
 
   function addGameToStore(game){
     const store = loadGamesStore();
     const { yyyy, mm, dd } = isoDateParts(game.datetime);
-
     store[yyyy] = store[yyyy] || {};
     store[yyyy][mm] = store[yyyy][mm] || {};
     store[yyyy][mm][dd] = store[yyyy][mm][dd] || [];
-
+    // evitar duplicatas por id
     if(!store[yyyy][mm][dd].some(g => g.id === game.id)){
       store[yyyy][mm][dd].push(game);
+      // ordenar por hora
       store[yyyy][mm][dd].sort((a,b)=> new Date(a.datetime) - new Date(b.datetime));
     }
     saveGamesStore(store);
   }
 
-  function deleteGame(id){
-    const store = loadGamesStore();
-    let changed = false;
-
-    for(const y in store){
-      for(const m in store[y]){
-        for(const d in store[y][m]){
-          const before = store[y][m][d].length;
-          store[y][m][d] = store[y][m][d].filter(g => g.id !== id);
-          if(store[y][m][d].length !== before) changed = true;
-        }
-      }
-    }
-
-    if(changed) saveGamesStore(store);
+  function generateId(game){
+    // id simples baseado em nome+datetime
+    return btoa((game.teams+"|"+game.datetime).toLowerCase()).replace(/=/g,'');
   }
 
-  // PARSER 👇 — mantido igual ao original (não mexi)
+  // parsing heurístico de texto colado
   function parseTextForGames(txt){
     const lines = txt.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
     const results = [];
-    const oddsRegex = /(\d+[,.]\d{1,3})/g;
+    const oddsRegex = /(?:\bodd(?:s)?[:\s]*|:)?((?:\d+(?:[,.]\d+)?\s*){1,10})/i;
+    const dateRegexes = [
+      /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/,       // 25/11/2025 or 25-11-2025
+      /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,         // 2025-11-25
+      /(\d{1,2}[\/\-]\d{1,2})/                     // 25/11 (assume ano atual)
+    ];
+    const timeRegex = /(\d{1,2}[:h]\d{2})/i; // 19:30 or 19h30
 
     lines.forEach(line => {
+      // tentativa: extrair teams (X ou vs ou -)
+      // split by known separators
+      let teams = null;
       let teamsMatch = line.match(/(.+?)(?:\s+v?s\.?s?\.?|\s+x\s+|\s+vs\s+|\s+-\s+)(.+?)(?=\s|$)/i);
-      let teams = teamsMatch ? (teamsMatch[1].trim()+" x "+teamsMatch[2].trim()) : null;
+      if(teamsMatch){
+        teams = (teamsMatch[1].trim() + ' x ' + teamsMatch[2].trim()).replace(/\s+/g,' ').trim();
+      } else {
+        // fallback: take two capitalized words
+        const cap = line.match(/([A-ZÁÀÂÃÉÈÍÓÔÕÚÇ][\wÁÀÂÃÉÈÍÓÔÕÚÇ-]{1,}\s+[A-ZÁÀÂÃÉÈÍÓÔÕÚÇ][\wÁÀÂÃÉÈÍÓÔÕÚÇ-]{1,})/);
+        if(cap) teams = cap[0];
+      }
 
-      let dateMatch = line.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
-      let timeMatch = line.match(/(\d{1,2}[:h]\d{2})/i);
+      // date
+      let dateFound = null;
+      for(const r of dateRegexes){
+        const m = line.match(r);
+        if(m){
+          dateFound = m[1];
+          break;
+        }
+      }
 
-      const odds = [...line.matchAll(oddsRegex)]
-          .map(m=>Number(m[1].replace(',','.')))
-          .filter(n=>n>1);
+      // time
+      const timeM = line.match(timeRegex);
+      const timeFound = timeM ? timeM[1].replace('h',':') : null;
 
-      let dt = new Date();
-      if(dateMatch){
-        const p = dateMatch[1].split(/[-\/]/);
-        let d = p[0].padStart(2,'0');
-        let m = p[1].padStart(2,'0');
-        let y = p[2] ? (p[2].length===2 ? "20"+p[2] : p[2]) : dt.getFullYear();
-        let hhmm = timeMatch ? timeMatch[1].replace('h',':') : "00:00";
-        dt = new Date(`${y}-${m}-${d}T${hhmm}:00`);
+      // odds: any numbers with decimals > 1 or so
+      const possibleNums = Array.from(line.matchAll(/(\d+[,.]\d{1,3})/g)).map(m=>m[1].replace(',','.'));
+      const odds = possibleNums.map(v=>Number(v)).filter(n=>!isNaN(n) && n>1);
+
+      // Compose datetime
+      let dt = null;
+      if(dateFound){
+        // normalize dateFound to ISO
+        let day, month, year;
+        if(/\d{4}[\/\-]/.test(dateFound)){ // yyyy-mm-dd
+          const parts = dateFound.split(/[-\/]/).map(p=>p.padStart(2,'0'));
+          year = parts[0]; month = parts[1]; day = parts[2] || '01';
+        } else {
+          const parts = dateFound.split(/[-\/]/);
+          day = parts[0].padStart(2,'0');
+          month = (parts[1]||'01').padStart(2,'0');
+          year = parts[2] ? (parts[2].length===2?('20'+parts[2]):parts[2]) : (new Date()).getFullYear();
+        }
+        const hhmm = timeFound ? (timeFound.includes(':') ? timeFound : timeFound+':00') : '00:00';
+        dt = new Date(`${year}-${month}-${day}T${hhmm}:00`);
+      } else if(timeFound){
+        // assume today
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth()+1).padStart(2,'0');
+        const dd = String(today.getDate()).padStart(2,'0');
+        const hhmm = timeFound.includes(':') ? timeFound : timeFound+':00';
+        dt = new Date(`${yyyy}-${mm}-${dd}T${hhmm}:00`);
+      } else {
+        // not enough info: maybe line contains teams only; skip? we'll still capture with datetime = today 00:00
+        const today = new Date(); today.setHours(0,0,0,0);
+        dt = today;
       }
 
       if(teams){
@@ -105,213 +134,258 @@
         results.push(obj);
       }
     });
+
     return results;
   }
 
-  function matchWithStore(parsed){
+  // tenta encontrar correspondência com jogos existentes (por nome normalizado)
+  function matchWithStore(parsedList){
     const store = loadGamesStore();
+    // flatten existing games with normalized name
     const flat = [];
-
-    for(const y in store){
-      for(const m in store[y]){
-        for(const d in store[y][m]){
-          (store[y][m][d]||[]).forEach(g=>{
-            flat.push({ game: g, norm: normalizeName(g.teams) });
+    for(const yyyy in store){
+      for(const mm in store[yyyy]){
+        for(const dd in store[yyyy][mm]){
+          (store[yyyy][mm][dd]||[]).forEach(g=>{
+            const norm = normalizeName(g.teams);
+            flat.push({ game: g, norm });
           });
         }
       }
     }
-
     const found = [], notfound = [];
-
-    parsed.forEach(p=>{
+    parsedList.forEach(p=>{
       const normp = normalizeName(p.teams);
-      let match = flat.find(f => f.norm.includes(normp) || normp.includes(f.norm));
-
-      if(match){
-        const g = match.game;
-        const newOdds = p.odds.filter(o => !g.odds.includes(o));
-        g.odds = Array.from(new Set([...g.odds, ...newOdds]));
-
-        addGameToStore(g);
-        found.push({ parsed:p, matched:g });
-
+      // try find by substring or exact
+      let matched = flat.find(f => f.norm.includes(normp) || normp.includes(f.norm));
+      if(!matched){
+        // try split teams and match any
+        const parts = normp.split(' x ').map(s=>s.trim());
+        matched = flat.find(f => {
+          return parts.every(part => part && f.norm.includes(part));
+        });
+      }
+      if(matched){
+        // update matched game: append odds if any new
+        const target = matched.game;
+        const newOdds = (p.odds||[]).filter(o => !target.odds || !target.odds.includes(o));
+        target.odds = Array.from(new Set([...(target.odds||[]), ...newOdds])).sort();
+        // persist
+        addGameToStore(target);
+        found.push({ parsed:p, matched:target });
       } else {
         notfound.push(p);
       }
     });
-
     return { found, notfound };
   }
 
-  // === UI ===
+  // UI helpers
+  function showModal(id){ $(id).classList.remove('hidden'); }
+  function hideModal(id){ $(id).classList.add('hidden'); }
 
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, m => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
-  }
-
-  // abrir modal geral
-  function showModal(id){
-    const el = $(id);
-    el.style.background = "#FFD700"; // amarelo ouro
-    el.classList.remove('hidden');
-  }
-  function hideModal(id){
-    $(id).classList.add('hidden');
-  }
-
-  // MOSTRAR 10 JOGOS QUE COMEÇAM EM 15 MINUTOS
-  function renderNext15min(){
-    const now = new Date();
-    const limit = new Date(now.getTime() + 15*60000);
-
-    const store = loadGamesStore();
-    const flat = [];
-
-    for(const y in store){
-      for(const m in store[y]){
-        for(const d in store[y][m]){
-          store[y][m][d].forEach(g => flat.push(g));
-        }
-      }
-    }
-
-    const upcoming = flat
-      .filter(g => {
-        const t = new Date(g.datetime);
-        return t >= now && t <= limit;
-      })
-      .sort((a,b)=> new Date(a.datetime) - new Date(b.datetime))
-      .slice(0,10);
-
-    return upcoming;
-  }
-
-  // JOGOS EM ANDAMENTO
-  function getRunningGames(){
-    const now = new Date();
-    const store = loadGamesStore();
-    const flat = [];
-
-    for(const y in store){
-      for(const m in store[y]){
-        for(const d in store[y][m]){
-          store[y][m][d].forEach(g => flat.push(g));
-        }
-      }
-    }
-
-    // critério simples: começou há menos de 2h
-    return flat.filter(g => {
-      const t = new Date(g.datetime);
-      return t <= now && (now - t) <= 2*60*60*1000;
-    });
-  }
-
-  // abrir modal 30% para jogo específico
-  function openSingleGameModal(game){
-    const el = $('#modal-single');
-    $('#single-body').innerHTML = `
-      <h2>${escapeHtml(game.teams)}</h2>
-      <p>${new Date(game.datetime).toLocaleString()}</p>
-      <p><strong>ODDs:</strong> ${game.odds.join(' | ') || 'Sem ODDs'}</p>
-    `;
-    el.style.width = "30%";
-    el.style.background = "#FFD700";
-    showModal('#modal-single');
-  }
-
+  // render home list (default)
   function renderHome(){
     const main = $('#home-list');
     const store = loadGamesStore();
+    // flatten and get next upcoming or all
     const flat = [];
-
-    for(const y in store){
-      for(const m in store[y]){
-        for(const d in store[y][m]){
-          store[y][m][d].forEach(g => flat.push(g));
+    for(const yyyy in store){
+      for(const mm in store[yyyy]){
+        for(const dd in store[yyyy][mm]){
+          (store[yyyy][mm][dd]||[]).forEach(g=>{
+            flat.push(g);
+          });
         }
       }
     }
-
     flat.sort((a,b)=> new Date(a.datetime) - new Date(b.datetime));
-
-    let hot = renderNext15min();
-    let htmlHot = "";
-
-    if(hot.length){
-      htmlHot = `
-        <h3 style="color:red">Jogos iniciando em 15 minutos</h3>
-        ${hot.map(g => gameCard(g)).join('')}
-      `;
-    }
-
     if(flat.length===0){
-      main.innerHTML = htmlHot + `<p class="hint">Sem jogos salvos.</p>`;
+      main.innerHTML = `<p class="hint">Sem jogos salvos. Use "Inserir jogos".</p>`;
       return;
     }
-
-    const first10 = flat.slice(0,10);
-
-    main.innerHTML = htmlHot + first10.map(g=>gameCard(g)).join('');
-  }
-
-  // CARTÃO DE JOGO
-  function gameCard(g){
-    return `
-      <div class="card-game" data-id="${g.id}">
-        <div onclick="window.openSingleGame && window.openSingleGame('${g.id}')">
+    // show first 10
+    const toShow = flat.slice(0,10);
+    main.innerHTML = toShow.map(g=>`
+      <div class="card-game">
+        <div>
           <div><strong>${escapeHtml(g.teams)}</strong></div>
-          <div class="meta">${new Date(g.datetime).toLocaleString()}</div>
-          <div class="meta">${g.odds.length ? 'ODDs: '+g.odds.join(' | ') : 'Sem ODDs'}</div>
+          <div class="meta">${(new Date(g.datetime)).toLocaleString()}</div>
         </div>
-        <button class="btn-delete" onclick="window.deleteGameFront('${g.id}')">🗑</button>
+        <div>
+          <div class="meta">${g.odds && g.odds.length? 'ODDs: '+g.odds.join(' | ') : 'Sem ODDs'}</div>
+        </div>
       </div>
-    `;
+    `).join('') + (flat.length>10 ? `<div style="text-align:center; margin-top:10px"><button id="btn-more-games" class="primary">Ver mais jogos</button></div>` : '');
+    // attach evento
+    const moreBtn = $('#btn-more-games');
+    if(moreBtn) moreBtn.addEventListener('click', ()=> {
+      openMoreGamesModal(flat);
+    });
   }
 
-  // Funções globais para botões
-  window.deleteGameFront = function(id){
-    deleteGame(id);
-    renderHome();
-  };
+  function openMoreGamesModal(allgames){
+    const container = $('#more-list');
+    if(!allgames) allgames = [];
+    container.innerHTML = allgames.map(g=>`
+      <div class="card-game">
+        <div>
+          <div><strong>${escapeHtml(g.teams)}</strong></div>
+          <div class="meta">${(new Date(g.datetime)).toLocaleString()}</div>
+        </div>
+        <div class="meta">${g.odds && g.odds.length ? 'ODDs: '+g.odds.join(' | ') : 'Sem ODDs'}</div>
+      </div>
+    `).join('');
+    showModal('#modal-more');
+  }
 
-  window.openSingleGame = function(id){
+  // search UI
+  function doSearch(q){
+    const normq = normalizeName(q);
     const store = loadGamesStore();
-    for(const y in store){
-      for(const m in store[y]){
-        for(const d in store[y][m]){
-          const g = store[y][m][d].find(x=>x.id===id);
-          if(g){ openSingleGameModal(g); return; }
+    const flat = [];
+    for(const yyyy in store){
+      for(const mm in store[yyyy]){
+        for(const dd in store[yyyy][mm]){
+          (store[yyyy][mm][dd]||[]).forEach(g=>{
+            flat.push(g);
+          });
         }
       }
     }
-  };
+    const matches = flat.filter(g => normalizeName(g.teams).includes(normq));
+    const res = $('#search-result');
+    if(matches.length===0){
+      res.innerHTML = `<p style="color:#ffdddd"><strong>Jogo não encontrado</strong></p>`;
+    } else {
+      res.innerHTML = matches.map(g=>`<div class="card-game"><div><strong>${escapeHtml(g.teams)}</strong><div class="meta">${(new Date(g.datetime)).toLocaleString()}</div></div><div class="meta">${g.odds && g.odds.length ? 'ODDs: '+g.odds.join(' | ') : 'Sem ODDs'}</div></div>`).join('');
+    }
+  }
 
-  // === INITIALIZE ===
-  document.addEventListener('DOMContentLoaded', ()=>{
-    renderHome();
+  // helper escape HTML
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-    $('#btn-open-running').addEventListener('click', ()=>{
-      const running = getRunningGames();
-      const body = $('#running-body');
-      body.innerHTML = running.length
-        ? running.map(g => gameCard(g)).join('')
-        : "<p>Nenhum jogo em andamento.</p>";
+  // eventos UI
+  function init(){
+    // carregar último texto colado (se usar enviar.html)
+    const lastPaste = localStorage.getItem('_last_paste');
+    if(lastPaste) $('#paste-area').value = lastPaste;
 
-      const modal = $('#modal-running');
-      modal.style.width = "80%";
-      modal.style.background = "#FFD700";
-      showModal('#modal-running');
+    $('#btn-insert').addEventListener('click', ()=> {
+      showModal('#modal-insert');
+      $('#process-status').textContent = '';
+      $('#process-result').innerHTML = '';
     });
 
-    qs('[data-close]').forEach(b => {
-      b.addEventListener('click', ()=>{
-        hideModal("#"+b.getAttribute('data-close'));
+    $('#close-insert').addEventListener('click', ()=> {
+      hideModal('#modal-insert');
+    });
+
+    $('#btn-process').addEventListener('click', ()=>{
+      const txt = $('#paste-area').value.trim();
+      if(!txt){ $('#process-status').textContent = 'Cole algum texto primeiro.'; return; }
+      $('#process-status').textContent = 'Processando...';
+      // processar (simulado async)
+      setTimeout(()=> {
+        const parsed = parseTextForGames(txt);
+        const { found, notfound } = matchWithStore(parsed);
+        $('#process-status').textContent = `Processado: ${found.length} jogos encontrados e ${notfound.length} não encontrados.`;
+        $('#process-result').innerHTML = (notfound.length>0 ? `<button id="btn-view-notfound" class="secondary">Ver jogos não encontrados</button>` : '');
+        if(notfound.length>0){
+          $('#btn-view-notfound').addEventListener('click', ()=> {
+            showNotFoundList(notfound);
+          });
+        }
+        renderHome();
+      }, 500);
+    });
+
+    $('#btn-save').addEventListener('click', ()=> {
+      // Salva os jogos já processados (na prática matchWithStore já salvou encontrados). Aqui vamos salvar os não encontrados como novos registros com datetime e sem odds.
+      const txt = $('#paste-area').value.trim();
+      if(!txt){ $('#process-status').textContent = 'Cole algum texto primeiro.'; return; }
+      const parsed = parseTextForGames(txt);
+      const { found, notfound } = matchWithStore(parsed);
+      // salvar notfound como novos jogos (será colocado em data detectada)
+      notfound.forEach(p => {
+        addGameToStore(p);
       });
+      $('#process-status').textContent = `Salvo: ${notfound.length} novos jogos adicionados.`;
+      renderHome();
     });
-  });
 
+    $('#btn-today').addEventListener('click', ()=> {
+      // mostrar jogos do dia
+      const today = new Date();
+      const yyyy = String(today.getFullYear());
+      const mm = String(today.getMonth()+1).padStart(2,'0');
+      const dd = String(today.getDate()).padStart(2,'0');
+      const store = loadGamesStore();
+      const list = (((store[yyyy]||{})[mm]||{})[dd]) || [];
+      if(list.length===0){
+        alert('Sem jogos para hoje.');
+        return;
+      }
+      // open modal with first 10 and ver mais dentro do modal
+      openMoreGamesModal(list);
+    });
+
+    $('#btn-export').addEventListener('click', ()=> {
+      const data = loadGamesStore();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `games_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // search modal
+    $('#btn-search').addEventListener('click', ()=> {
+      showModal('#modal-search');
+      $('#search-input').value = '';
+      $('#search-result').innerHTML = '';
+      $('#search-input').focus();
+    });
+    $('#close-search').addEventListener('click', ()=> hideModal('#modal-search'));
+    $('#search-input').addEventListener('input', (e)=> {
+      const q = e.target.value.trim();
+      if(q.length>1) doSearch(q);
+      else $('#search-result').innerHTML = '';
+    });
+
+    $('#close-more').addEventListener('click', ()=> hideModal('#modal-more'));
+    $('#close-notfound').addEventListener('click', ()=> hideModal('#modal-notfound'));
+
+    // import file button (in header hidden input)
+    $('#file-import').addEventListener('change', ev => {
+      const f = ev.target.files[0];
+      if(!f) return;
+      const r = new FileReader();
+      r.onload = e => {
+        try{
+          const obj = JSON.parse(e.target.result);
+          saveGamesStore(obj);
+          alert('Importado com sucesso!');
+          renderHome();
+        }catch(err){
+          alert('Arquivo JSON inválido.');
+        }
+      };
+      r.readAsText(f);
+    });
+
+    renderHome();
+  }
+
+  function showNotFoundList(list){
+    $('#notfound-list').innerHTML = list.map(p=>`<li><strong>${escapeHtml(p.teams)}</strong> — ${ (new Date(p.datetime)).toLocaleString() } — <small>${escapeHtml(p.meta.raw)}</small></li>`).join('');
+    showModal('#modal-notfound');
+  }
+
+  // iniciar
+  document.addEventListener('DOMContentLoaded', init);
 })();
