@@ -2,27 +2,31 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Inserção Manual de Jogos</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>ALXbet – Inserção Manual</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="container">
+<div class="overlay"></div>
 
-    <h1>Adicionar Jogos Manualmente</h1>
+<div class="container">
 
-    <!-- Área de colagem -->
-    <textarea id="scannerInput" placeholder="Cole aqui os jogos e odds..."></textarea>
+  <button class="back-btn" onclick="history.back()">← Voltar</button>
 
-    <!-- Botão único -->
+  <h1>Inserir Jogos e Odds</h1>
+
+  <textarea id="scannerInput" placeholder="Ex: Time A x Time B | 1.90 3.20 4.10"></textarea>
+
+  <div class="buttons">
     <button id="processBtn">PROCESSAR</button>
-
-    <!-- Lista de jogos -->
-    <div id="gamesContainer"></div>
-
+    <button id="insertBtn">INSERIR JOGOS</button>
   </div>
 
-  <script src="script.js"></script>
+  <div id="gamesPreview"></div>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
