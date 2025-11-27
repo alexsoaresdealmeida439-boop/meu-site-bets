@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Jogos & ODDs</title>
+  <title>Gerenciador de Jogos & ODDs</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -20,14 +20,8 @@
 
   <main id="main">
     <section id="home-list">
-      <p class="hint">Sem jogos salvos. Use "Inserir jogos" para colar dados ou "Jogos de hoje".</p>
+      <p class="hint">Nenhum jogo selecionado. Use "Inserir jogos" para colar dados ou "Jogos de hoje".</p>
     </section>
-
-    <!-- Pasta mariosca (rodapé) -->
-    <div id="mariosca" class="mariosca">
-      <div class="mariosca-icon">📁</div>
-      <div class="mariosca-label">Histórico (boneca mariosca)</div>
-    </div>
   </main>
 
   <!-- Modal: Inserir Jogos (30% central) -->
@@ -45,11 +39,11 @@
     </div>
   </div>
 
-  <!-- Modal: Ver mais jogos (80% large) -->
+  <!-- Modal: Ver mais jogos (75% area) -->
   <div id="modal-more" class="modal hidden">
-    <div class="modal-card modal-80">
+    <div class="modal-card modal-75">
       <button class="close-btn" id="close-more">✕</button>
-      <h2 id="more-title">Jogos</h2>
+      <h2>Jogos do dia</h2>
       <div id="more-list"></div>
     </div>
   </div>
@@ -63,7 +57,7 @@
     </div>
   </div>
 
-  <!-- Modal: Not found list -->
+  <!-- Not found list modal small -->
   <div id="modal-notfound" class="modal hidden">
     <div class="modal-card small">
       <button class="close-btn" id="close-notfound">✕</button>
@@ -72,38 +66,9 @@
     </div>
   </div>
 
-  <!-- Modal: Pasta mariosca (20% small) -->
-  <div id="modal-mariosca" class="modal hidden">
-    <div class="modal-card modal-20">
-      <button class="arrow-left" id="mario-arrow">←</button>
-      <button class="close-btn" id="close-mariosca">✕</button>
-      <h3>Buscar por data (dd/mm/aaaa)</h3>
-      <input id="mario-date" placeholder="dd/mm/aaaa" />
-      <div id="mario-results"></div>
-    </div>
-  </div>
-
-  <!-- Firebase compat SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <!-- Firebase config (COLEI sua config aqui) -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDXoK2h28eCwqATf5GyOYusK3BSVaBjUg8",
-      authDomain: "betting-scanner.firebaseapp.com",
-      projectId: "betting-scanner",
-      storageBucket: "betting-scanner.firebasestorage.app",
-      messagingSenderId: "760813111854",
-      appId: "1:760813111854:web:8574bcfa535ed7826eadbf"
-    };
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    window._FIREBASE = { firestore: firebase.firestore() };
-    // nome da coleção principal definido por você
-    window._COLL_ROOT = "Jogos";
-  </script>
+  <footer class="footer">
+    <small>Simulação de armazenamento em pastas (anos / meses / dias). Use Exportar para persistir.</small>
+  </footer>
 
   <script src="script.js"></script>
 </body>
