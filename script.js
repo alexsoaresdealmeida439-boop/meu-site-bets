@@ -1,67 +1,65 @@
+const API_KEY = "23b89636f57128671e479701eaad2a37";
 
-const input = document.getElementById("scannerInput");
-const processBtn = document.getElementById("processBtn");
-const insertBtn = document.getElementById("insertBtn");
-const preview = document.getElementById("gamesPreview");
+class ProfessionalBetManager {
+    constructor() {
+        this.games = new Map(JSON.parse(localStorage.getItem("betGames") || "[]"));
+        this.showWelcomeView();
+        this.loadTodayGames();
+    }
 
-let parsedGames = [];
+    showWelcomeView(){
+        welcomeSection.style.display="block";
+        currentFolder.style.display="none";
+        this.renderMiniToday();
+    }
 
-processBtn.onclick = () => {
-  preview.innerHTML = "";
-  parsedGames = [];
+    showTodayGames(){
+        welcomeSection.style.display="none";
+        currentFolder.style.display="block";
+        folderTitle.textContent="JOGOS DE HOJE";
+        this.renderToday(document.getElementById("folderContent"));
+    }
 
-  input.value.split("\n").forEach(line => {
-    const m = line.match(/(.+?)\s+x\s+(.+?)\s+\|\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/i);
-    if(!m) return;
+    expandMini(e){
+        e.stopPropagation();
+        miniTodayPanel.classList.add("expanded");
+        this.renderMiniToday();
+    }
 
-    parsedGames.push({
-      home:m[1],
-      away:m[2],
-      h:m[3],
-      d:m[4],
-      a:m[5]
-    });
+    collapseMini(e){
+        e.stopPropagation();
+        miniTodayPanel.classList.remove("expanded");
+    }
 
-    preview.appendChild(cardHTML(m[1],m[2],m[3],m[4],m[5]));
-  });
-};
+    renderMiniToday(){
+        this.renderToday(document.getElementById("miniTodayContent"));
+    }
 
-insertBtn.onclick = () => {
-  alert(parsedGames.length + " jogos inseridos.");
-  input.value = "";
-};
+    renderToday(container){
+        const today = new Date().toISOString().split("T")[0];
+        const games = [...this.games.values()].filter(g=>g.originalDate===today);
+        container.innerHTML = games.length
+            ? games.map(g=>`<div>${g.teams} - ${g.time}</div>`).join("")
+            : "<p>Nenhum jogo</p>";
+    }
 
-function cardHTML(h,a,o1,o2,o3){
-  const card = document.createElement("div");
-  card.className="game-card";
-
-  card.innerHTML=`
-    <strong>${h} x ${a}</strong>
-    <div class="odds">
-      <div class="odd">H ${o1}</div>
-      <div class="odd">D ${o2}</div>
-      <div class="odd">A ${o3}</div>
-    </div>
-    <div class="actions" style="display:none">
-      <button class="copy">Copiar</button>
-      <button class="delete">Apagar</button>
-    </div>
-  `;
-
-  card.onclick = () => {
-    const actions = card.querySelector(".actions");
-    actions.style.display = actions.style.display==="none"?"flex":"none";
-  };
-
-  card.querySelector(".delete").onclick = e=>{
-    e.stopPropagation();
-    card.remove();
-  };
-
-  card.querySelector(".copy").onclick = e=>{
-    e.stopPropagation();
-    navigator.clipboard.writeText(`${h} x ${a} | ${o1} ${o2} ${o3}`);
-  };
-
-  return card;
+    async loadTodayGames(){
+        const today = new Date().toISOString().split("T")[0];
+        const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${today}`,{
+            headers:{'x-apisports-key':API_KEY}
+        });
+        const data = await res.json();
+        data.response.forEach(g=>{
+            this.games.set(g.fixture.id,{
+                id:g.fixture.id,
+                teams:g.teams.home.name+" vs "+g.teams.away.name,
+                time:new Date(g.fixture.date).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
+                originalDate:today
+            });
+        });
+        localStorage.setItem("betGames",JSON.stringify([...this.games]));
+        this.renderMiniToday();
+    }
 }
+
+const betManager = new ProfessionalBetManager();
