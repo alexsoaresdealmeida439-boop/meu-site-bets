@@ -1,109 +1,68 @@
-:root{
-  --green-dark: #0f3d2e;
-  --green-dark-2: #11533f;
-  --white: #ffffff;
-  --muted: #cbd5ca;
-  --accent: #e6f6ef;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+/* Fundo geral do site */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #006400; /* Verde escuro */
+    color: #ffffff;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  background: linear-gradient(180deg, var(--green-dark) 0%, #09281f 100%);
-  color:var(--white);
-  -webkit-font-smoothing:antialiased;
+/* Container central */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-.topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:14px 18px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-  position:sticky; top:0; z-index:10;
-}
-.topbar h1{margin:0; font-size:18px}
-.controls{display:flex; gap:8px; align-items:center}
-
-button{cursor:pointer; border:0; padding:10px 12px; border-radius:8px; font-weight:700}
-.primary{background:var(--white); color:var(--green-dark); box-shadow:0 4px 10px rgba(0,0,0,0.2)}
-.secondary{background:transparent; color:var(--white); border:1px solid rgba(255,255,255,0.08)}
-.tertiary{background:transparent; color:var(--muted)}
-.icon-btn{background:transparent; font-size:18px; padding:8px 10px}
-
-main{padding:18px 18px 100px 18px}
-.hint{opacity:0.95; color:var(--accent)}
-
-.card-game{
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  padding:12px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;
-  border-left:4px solid rgba(255,255,255,0.06);
-}
-.card-game .meta{font-size:13px; color:var(--muted)}
-
-.footer{padding:16px; text-align:center; color:var(--muted)}
-
-/* --------------------- MODAIS (ALTERADO) ----------------------- */
-.modal{
-  position:fixed;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,0.45);
-  z-index:40;
-}
-.hidden{display:none}
-
-.modal-card{
-  position:relative;
-  background:#FFD700;        /* FUNDO AMARELO OURO */
-  padding:18px;
-  border-radius:12px;
-  color:black;               /* TEXTO PRETO PARA LEGIBILIDADE */
-  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+/* Título principal */
+h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
 }
 
-/* sizes */
-.modal-30{width:30%; min-width:320px}
-.modal-20{width:20%; min-width:260px}
-.modal-10{width:10%; min-width:220px}
-.modal-80{width:80%; min-width:420px; max-height:85vh; overflow:auto}
-.small{width:40%; min-width:260px}
-
-.close-btn{position:absolute; right:10px; top:8px; background:transparent; color:black; font-size:18px; border-radius:6px}
-.close-btn.red{color:#ff0000}
-.arrow-left{position:absolute; left:10px; top:8px; background:transparent; color:black; font-size:18px; border-radius:6px}
-
-textarea, input[type="text"], input[type="search"], input {
-  width:100%; 
-  padding:10px; 
-  border-radius:8px; 
-  border:1px solid rgba(0,0,0,0.3); 
-  background:transparent; 
-  color:black;         /* texto preto agora */
-  resize:vertical;
+/* Caixa do conversor */
+.converter-box {
+    background: rgba(0,0,0,0.4);
+    padding: 20px;
+    border-radius: 12px;
 }
-textarea{min-height:140px}
 
-.modal-actions{display:flex; gap:10px; margin-top:10px}
-.status{margin-top:10px; font-weight:700; color:black}
-.result{margin-top:6px; color:black; font-size:14px}
-
-.small ul{max-height:260px; overflow:auto; padding-left:18px}
-
-/* floating footer */
-.mariosca{
-  position:fixed; right:18px; bottom:18px;
-  background:linear-gradient(180deg, var(--green-dark-2), var(--green-dark));
-  padding:10px 14px; border-radius:14px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.4);
-  display:flex; gap:8px; align-items:center;
-  cursor:pointer;
-  z-index:45;
+/* Inputs */
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 18px;
 }
-.mariosca-icon{font-size:20px}
-.mariosca-label{font-size:13px; color:var(--accent)}
+
+/* Botão */
+button {
+    width: 100%;
+    padding: 15px;
+    background-color: #ffffff;
+    color: #006400;  /* Verde escuro */
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+/* Resultado */
+.result-box {
+    margin-top: 20px;
+    background: rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 22px;
+    text-align: center;
+    font-weight: bold;
+}
