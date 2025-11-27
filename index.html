@@ -1,75 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Gerenciador de Jogos & ODDs</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>Placar ao Vivo</title>
+
+<style>
+/* Fundo geral do site */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #006400; /* Verde escuro */
+    color: #ffffff;
+}
+
+/* Container central */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Título principal */
+h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Caixa de jogos */
+.jogo-item {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.jogo-item:hover {
+    background: rgba(0,0,0,0.45);
+}
+
+.opcoes {
+    margin-top: 10px;
+}
+
+.delete-btn {
+    width: 100%;
+    padding: 10px;
+    background: red;
+    color: #fff;
+    border: none;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.delete-btn:hover {
+    opacity: 0.8;
+}
+</style>
+
 </head>
 <body>
-  <header class="topbar">
-    <h1>Jogos &amp; ODDs</h1>
-    <div class="controls">
-      <button id="btn-search" class="icon-btn" title="Pesquisar jogo">🔍</button>
-      <button id="btn-insert" class="primary">Inserir jogos</button>
-      <button id="btn-today" class="secondary">Jogos de hoje</button>
-      <button id="btn-export" class="tertiary">Exportar JSON</button>
-      <input id="file-import" type="file" accept=".json" style="display:none"/>
-    </div>
-  </header>
 
-  <main id="main">
-    <section id="home-list">
-      <p class="hint">Nenhum jogo selecionado. Use "Inserir jogos" para colar dados ou "Jogos de hoje".</p>
-    </section>
-  </main>
+<div class="container">
+    <h1>Jogos em Andamento</h1>
 
-  <!-- Modal: Inserir Jogos (30% central) -->
-  <div id="modal-insert" class="modal hidden">
-    <div class="modal-card modal-30">
-      <button class="close-btn" id="close-insert">✕</button>
-      <h2>Inserir jogos (cole o texto aqui)</h2>
-      <textarea id="paste-area" placeholder="Cole aqui o texto/numéro copiado pelo Google Lens..."></textarea>
-      <div class="modal-actions">
-        <button id="btn-process" class="primary">Processar</button>
-        <button id="btn-save" class="secondary">Salvar encontrados</button>
-      </div>
-      <div id="process-status" class="status"></div>
-      <div id="process-result" class="result"></div>
-    </div>
-  </div>
+    <!-- Área onde os jogos aparecem -->
+    <div id="jogos-area"></div>
+</div>
 
-  <!-- Modal: Ver mais jogos (75% area) -->
-  <div id="modal-more" class="modal hidden">
-    <div class="modal-card modal-75">
-      <button class="close-btn" id="close-more">✕</button>
-      <h2>Jogos do dia</h2>
-      <div id="more-list"></div>
-    </div>
-  </div>
 
-  <!-- Modal: Buscar (10% area) -->
-  <div id="modal-search" class="modal hidden">
-    <div class="modal-card modal-10">
-      <button class="close-btn red" id="close-search">✕</button>
-      <input id="search-input" placeholder="Pesquisar jogo (nome / time)..." />
-      <div id="search-result"></div>
-    </div>
-  </div>
+<script>
+// -------- LISTA DE JOGOS EM ANDAMENTO (EXEMPLO) --------
+let jogos = [
+    { id: 1, casa: "Flamengo", fora: "Palmeiras", minuto: "23' 1ºT", placar: "1 - 0" },
+    { id: 2, casa: "Real Madrid", fora: "Barcelona", minuto: "58' 2ºT", placar: "2 - 2" },
+    { id: 3, casa: "PSG", fora: "Lyon", minuto: "12' 1ºT", placar: "0 - 0" }
+];
 
-  <!-- Not found list modal small -->
-  <div id="modal-notfound" class="modal hidden">
-    <div class="modal-card small">
-      <button class="close-btn" id="close-notfound">✕</button>
-      <h3>Jogos não encontrados</h3>
-      <ul id="notfound-list"></ul>
-    </div>
-  </div>
+// --------- RENDERIZAR JOGOS NA TELA ---------
+function renderJogos() {
+    const area = document.getElementById("jogos-area");
+    area.innerHTML = "";
 
-  <footer class="footer">
-    <small>Simulação de armazenamento em pastas (anos / meses / dias). Use Exportar para persistir.</small>
-  </footer>
+    jogos.forEach(jogo => {
+        const div = document.createElement("div");
+        div.className = "jogo-item";
+        div.dataset.id = jogo.id;
 
-  <script src="script.js"></script>
+        div.innerHTML = `
+            <strong>${jogo.casa} x ${jogo.fora}</strong><br>
+            <span>${jogo.placar} — ${jogo.minuto}</span>
+            <div class="opcoes" style="display:none;">
+                <button class="delete-btn">APAGAR</button>
+            </div>
+        `;
+
+        // Clique no jogo → abrir/fechar opções
+        div.addEventListener("click", function () {
+            const opcoes = this.querySelector(".opcoes");
+            opcoes.style.display =
+                opcoes.style.display === "none" ? "block" : "none";
+        });
+
+        // Botão APAGAR
+        div.querySelector(".delete-btn").addEventListener("click", function (event) {
+            event.stopPropagation(); // impede abrir o menu de novo
+            removerJogo(jogo.id);
+        });
+
+        area.appendChild(div);
+    });
+}
+
+// --------- REMOVER JOGO ---------
+function removerJogo(id) {
+    jogos = jogos.filter(j => j.id !== id);
+    renderJogos();
+}
+
+// Renderiza ao carregar
+document.addEventListener("DOMContentLoaded", renderJogos);
+</script>
+
 </body>
 </html>
