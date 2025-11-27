@@ -1,102 +1,45 @@
 
-*{
-  box-sizing:border-box;
-  font-family:Arial, sans-serif;
+
+
+/* MINI PAINEL – JOGOS (HOME) */
+.mini-today-panel {
+    position: relative;
+    width: 100%;
+    max-height: 10vh;
+    overflow: hidden;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    margin-top: 25px;
 }
 
-body{
-  margin:0;
-  background:url("bg.jpg") no-repeat center center fixed;
-  background-size:cover;
-  color:white;
+.mini-today-panel.expanded {
+    max-height: 70vh;
+    cursor: default;
 }
 
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(5,25,15,0.88);
-  z-index:-1;
+.mini-header {
+    padding: 12px 16px;
+    font-weight: 700;
+    color: #ffd700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.container{
-  max-width:900px;
-  margin:40px auto;
-  padding:20px;
+.mini-body {
+    padding: 15px;
+    display: none;
 }
 
-h1{
-  text-align:center;
+.mini-today-panel.expanded .mini-body {
+    display: block;
 }
 
-textarea{
-  width:100%;
-  height:140px;
-  padding:12px;
-  border-radius:6px;
-  border:none;
-  font-size:14px;
-}
-
-.buttons{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-
-button{
-  padding:12px 20px;
-  border:none;
-  border-radius:6px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-#processBtn,
-#insertBtn{
-  background:white;
-  color:#0f2a1d;
-}
-
-.back-btn{
-  background:transparent;
-  color:white;
-  border:1px solid white;
-  margin-bottom:15px;
-}
-
-.game-card{
-  background:#163b2a;
-  padding:15px;
-  border-radius:8px;
-  margin-top:15px;
-  cursor:pointer;
-}
-
-.game-card:hover{
-  background:#1f4f3a;
-}
-
-.odds{
-  display:flex;
-  gap:10px;
-  margin-top:8px;
-}
-
-.odd{
-  background:white;
-  color:#0f2a1d;
-  padding:6px 10px;
-  border-radius:5px;
-  font-weight:bold;
-}
-
-.actions{
-  margin-top:10px;
-  display:flex;
-  gap:10px;
-}
-
-.actions button{
-  padding:6px 10px;
-  font-size:12px;
+.mini-close {
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #ff6b00;
 }
