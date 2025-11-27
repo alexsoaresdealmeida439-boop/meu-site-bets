@@ -1,29 +1,75 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>ALXbet – Inserção Manual</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALXbet - Premium Betting Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="overlay"></div>
+<div class="premium-bg"></div>
+<div class="gold-overlay"></div>
 
-<div class="container">
+<header class="main-header">
+    <div class="logo-container">
+        <div class="logo-wrapper">
+            <h1 class="main-logo">ALXBET</h1>
+            <div class="logo-subtitle">PREMIUM BETTING SUITE</div>
+        </div>
+        <div class="header-graphic">
+            <div class="graphic-element">🎰</div>
+            <div class="graphic-element">💰</div>
+            <div class="graphic-element">⚡</div>
+        </div>
+    </div>
+</header>
 
-  <button class="back-btn" onclick="history.back()">← Voltar</button>
+<div class="dashboard">
 
-  <h1>Inserir Jogos e Odds</h1>
+    <!-- ESQUERDA -->
+    <div class="left-column">
+        <div class="section-title"><h2>AO VIVO</h2></div>
+        <div id="liveGames"></div>
+    </div>
 
-  <textarea id="scannerInput" placeholder="Ex: Time A x Time B | 1.90 3.20 4.10"></textarea>
+    <!-- CENTRO -->
+    <div class="center-column">
 
-  <div class="buttons">
-    <button id="processBtn">PROCESSAR</button>
-    <button id="insertBtn">INSERIR JOGOS</button>
-  </div>
+        <!-- HOME -->
+        <div id="welcomeSection" class="welcome-section">
+            <div class="hero-content">
+                <h3>CONTROLE TOTAL DAS SUAS APOSTAS</h3>
+                <button class="premium-btn" onclick="betManager.showTodayGames()">VER JOGOS DE HOJE</button>
 
-  <div id="gamesPreview"></div>
+                <!-- MINI PAINEL -->
+                <div class="mini-today-panel" id="miniTodayPanel" onclick="betManager.expandMini(event)">
+                    <div class="mini-header">
+                        <span>📋 Jogos de Hoje</span>
+                        <span class="mini-close" onclick="betManager.collapseMini(event)">✖</span>
+                    </div>
+                    <div class="mini-body" id="miniTodayContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TELA CHEIA -->
+        <div id="currentFolder" style="display:none">
+            <button onclick="betManager.showWelcomeView()">← VOLTAR</button>
+            <h2 id="folderTitle"></h2>
+            <div id="folderContent"></div>
+        </div>
+
+    </div>
+
+    <!-- DIREITA -->
+    <div class="right-column">
+        <div class="period-btn" onclick="betManager.showYearlyFolders()">ANO</div>
+        <div class="period-btn" onclick="betManager.showMonthlyFolders()">MÊS</div>
+        <div class="period-btn" onclick="betManager.showDailyFolders()">DIA</div>
+        <div id="periodFolders"></div>
+    </div>
 
 </div>
 
