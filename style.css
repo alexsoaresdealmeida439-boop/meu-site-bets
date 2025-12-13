@@ -1,142 +1,71 @@
-:root{
-  --green-dark: #0f3d2e;
-  --green-dark-2: #11533f;
-  --white: #ffffff;
-  --muted: #cbd5ca;
-  --accent: #e6f6ef;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  color: #fff;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  background: linear-gradient(180deg, var(--green-dark) 0%, #09281f 100%);
-  color:var(--white);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+body {
+  background: url("background.jpg") no-repeat center center fixed;
+  background-size: cover;
 }
 
-.topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:18px 24px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-  position:sticky; top:0; z-index:10;
+.overlay {
+  background: rgba(0,0,0,0.75);
+  height: 100%;
+  display: flex;
 }
-.topbar h1{margin:0; font-size:20px; letter-spacing:0.4px}
-.controls{display:flex; gap:8px; align-items:center}
 
-button{cursor:pointer; border:0; padding:10px 12px; border-radius:8px; font-weight:600}
-.primary{background:var(--white); color:var(--green-dark); box-shadow:0 4px 10px rgba(0,0,0,0.2)}
-.secondary{background:transparent; color:var(--white); border:1px solid rgba(255,255,255,0.08)}
-.tertiary{background:transparent; color:var(--muted)}
-.icon-btn{background:transparent; font-size:18px; padding:8px 10px}
+.left, .right {
+  width: 50%;
+  padding: 15px;
+  overflow-y: auto;
+}
 
-main{padding:20px}
-.hint{opacity:0.9; color:var(--accent)}
+.game {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid #2ecc71;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
 
-.card-game{
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  padding:12px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;
-  border-left:4px solid rgba(255,255,255,0.06);
+.folder {
+  background: rgba(255,255,255,0.15);
+  padding: 8px;
+  margin-bottom: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  border-radius: 4px;
 }
-.card-game:hover{
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  border-left-color: rgba(255,255,255,0.1);
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
 }
-.card-game .meta{font-size:13px; color:var(--muted)}
 
-.footer{padding:16px; text-align:center; color:var(--muted)}
-
-/* modal base */
-.modal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); z-index:30}
-.hidden{display:none}
-.modal-card{position:relative; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:18px; border-radius:12px; color:var(--white); box-shadow:0 12px 40px rgba(0,0,0,0.6);}
-
-/* sizes */
-.modal-30{width:30%; min-width:320px}
-.modal-75{width:75%; min-width:420px; max-height:85vh; overflow:auto}
-.modal-80{width:80%; min-width:420px; max-height:85vh; overflow:auto}
-.modal-10{width:10%; min-width:220px}
-.small{width:40%; min-width:260px}
-
-.close-btn{position:absolute; right:10px; top:8px; background:transparent; color:var(--muted); font-size:18px; border-radius:6px}
-.close-btn.red{color:#ff6b6b}
-textarea, input[type="text"], input[type="search"]{
-  width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--white); resize:vertical;
+.modal-content {
+  background: #0b6623;
+  width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+  padding: 15px;
+  border-radius: 8px;
+  position: relative;
 }
-textarea{min-height:140px}
 
-.modal-actions{display:flex; gap:10px; margin-top:10px}
-.status{margin-top:10px; font-weight:700}
-.result{margin-top:6px; color:var(--muted); font-size:14px}
-
-.small ul{max-height:260px; overflow:auto; padding-left:18px}
-
-/* Pastas boneca/marioresca */
-.folders-container{margin-top:20px; padding:15px; background:rgba(255,255,255,0.02); border-radius:10px; border:1px solid rgba(255,255,255,0.03)}
-.folders-nav{display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap}
-.folder-btn{padding:8px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:6px; color:var(--muted); font-size:13px; cursor:pointer}
-.folder-btn:hover{background:rgba(255,255,255,0.08)}
-.folders-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px}
-.folder-category{background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05)}
-.folder-category h4{margin:0 0 10px 0; font-size:14px; color:var(--accent)}
-.folder-item{display:flex; justify-content:space-between; align-items:center; padding:8px; background:rgba(255,255,255,0.03); border-radius:6px; margin-bottom:5px; cursor:pointer; transition:all 0.2s ease}
-.folder-item:hover{background:rgba(255,255,255,0.06)}
-.folder-item small{color:var(--muted); font-size:11px}
-
-/* Context Menu */
-.context-menu{
-  position:fixed; background:var(--green-dark-2); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:5px; z-index:100; 
-  box-shadow:0 4px 12px rgba(0,0,0,0.3); min-width:120px;
-}
-.context-btn{
-  display:block; width:100%; padding:8px 12px; background:transparent; color:var(--white); border:none; border-radius:4px; 
-  text-align:left; font-size:13px; cursor:pointer;
-}
-.context-btn:hover{background:rgba(255,255,255,0.1)}
-.context-btn.delete{color:#ff6b6b}
-.context-btn.delete:hover{background:rgba(255,0,0,0.1)}
-
-/* Preview Modal Styles */
-.preview-container{max-height:60vh; overflow-y:auto; margin:15px 0}
-.preview-item{border-left:4px solid rgba(255,255,255,0.1); margin-bottom:12px; padding:12px; background:rgba(255,255,255,0.02)}
-.preview-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
-.confidence-badge{
-  padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;
-}
-.confidence-badge.high{background:#059669; color:white}
-.confidence-badge.medium{background:#d97706; color:white}
-.confidence-badge.low{background:#dc2626; color:white}
-.preview-actions{display:flex; gap:8px; margin-top:10px}
-.btn-edit-preview, .btn-delete-preview{
-  padding:4px 8px; font-size:11px; border-radius:4px; border:none; cursor:pointer;
-}
-.btn-edit-preview{background:rgba(59,130,246,0.2); color:#60a5fa}
-.btn-delete-preview{background:rgba(220,38,38,0.2); color:#f87171}
-.btn-edit-preview:hover{background:rgba(59,130,246,0.3)}
-.btn-delete-preview:hover{background:rgba(220,38,38,0.3)}
-
-/* Games Container */
-.games-container{max-height:70vh; overflow-y:auto; padding-right:10px}
-
-/* Scrollbar personalizado */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:rgba(255,255,255,0.05); border-radius:3px}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1); border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
-
-/* Responsividade */
-@media (max-width: 768px){
-  .topbar{flex-direction:column; gap:15px; align-items:flex-start}
-  .controls{width:100%; justify-content:flex-start; flex-wrap:wrap}
-  .modal-30, .modal-75, .modal-80, .modal-10{width:95%; min-width:unset}
-  .folders-nav{flex-direction:column}
-  .folders-grid{grid-template-columns:1fr}
-  .card-game{flex-direction:column; align-items:flex-start; gap:8px}
+.close {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
 }
