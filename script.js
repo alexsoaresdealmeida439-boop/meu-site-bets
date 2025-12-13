@@ -1,4 +1,6 @@
-// ===== FIREBASE CONFIG =====
+// ===============================
+// FIREBASE CONFIG (SUBSTITUA)
+// ===============================
 const firebaseConfig = {
   apiKey: "SUA_API_KEY",
   authDomain: "SEU_PROJETO.firebaseapp.com",
@@ -8,11 +10,15 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ===== TEMPO =====
+// ===============================
+// TEMPO
+// ===============================
 const agora = () => Date.now();
 const minutos = ms => ms / 60000;
 
-// ===== JOGOS AGORA =====
+// ===============================
+// JOGOS AO VIVO / ≤10 MIN
+// ===============================
 async function carregarJogosAtivos() {
   const container = document.getElementById("liveGames");
   container.innerHTML = "";
@@ -33,7 +39,7 @@ async function carregarJogosAtivos() {
       div.innerHTML = `
         <strong>${j.home} x ${j.away}</strong><br>
         Mercado: ${j.market}<br>
-        Odd: ${j.odd} | EV: ${j.ev}<br>
+        Odd: ${j.odd} | EV: ${j.ev.toFixed(3)}<br>
         Status: ${j.status.toUpperCase()}
       `;
       container.appendChild(div);
@@ -41,7 +47,9 @@ async function carregarJogosAtivos() {
   });
 }
 
-// ===== HISTÓRICO =====
+// ===============================
+// HISTÓRICO ANO / MÊS / DIA
+// ===============================
 async function carregarPastas() {
   const cont = document.getElementById("folders");
   cont.innerHTML = "";
@@ -70,7 +78,14 @@ async function abrirDia(ano, mes, dia) {
   const cont = document.getElementById("modalGames");
   cont.innerHTML = "";
 
-  const snap = await db.collection("jogos").doc(ano).collection(mes).doc(dia).collection("jogos").get();
+  const snap = await db
+    .collection("jogos")
+    .doc(ano)
+    .collection(mes)
+    .doc(dia)
+    .collection("jogos")
+    .get();
+
   snap.forEach(doc => {
     const j = doc.data();
     const div = document.createElement("div");
@@ -78,14 +93,16 @@ async function abrirDia(ano, mes, dia) {
     div.innerHTML = `
       <strong>${j.home} x ${j.away}</strong><br>
       Mercado: ${j.market}<br>
-      Odd: ${j.odd} | EV: ${j.ev}<br>
+      Odd: ${j.odd} | EV: ${j.ev.toFixed(3)}<br>
       Status: ${j.status}
     `;
     cont.appendChild(div);
   });
 }
 
-// ===== MODAL =====
+// ===============================
+// MODAL
+// ===============================
 function abrirModal(titulo, itens, onClick) {
   document.getElementById("modalTitle").textContent = titulo;
   const cont = document.getElementById("modalGames");
@@ -106,7 +123,9 @@ function closeModal() {
   document.getElementById("modal").style.display = "none";
 }
 
-// ===== INIT =====
+// ===============================
+// INIT
+// ===============================
 carregarJogosAtivos();
 carregarPastas();
 setInterval(carregarJogosAtivos, 60000);
