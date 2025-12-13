@@ -4,15 +4,10 @@ html, body {
   height: 100%;
   font-family: Arial, sans-serif;
   color: #fff;
-}
-
-body {
-  background: url("background.jpg") no-repeat center center fixed;
-  background-size: cover;
+  background: #000;
 }
 
 .overlay {
-  background: rgba(0,0,0,0.75);
   height: 100%;
   display: flex;
 }
@@ -23,8 +18,12 @@ body {
   overflow-y: auto;
 }
 
+h2 {
+  margin-top: 0;
+}
+
 .game {
-  background: rgba(0,0,0,0.6);
+  background: #111;
   border: 1px solid #2ecc71;
   border-radius: 6px;
   padding: 10px;
@@ -32,7 +31,7 @@ body {
 }
 
 .folder {
-  background: rgba(255,255,255,0.15);
+  background: #222;
   padding: 8px;
   margin-bottom: 6px;
   cursor: pointer;
