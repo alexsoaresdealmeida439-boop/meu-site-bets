@@ -2,9 +2,9 @@
 // FIREBASE CONFIG (SUBSTITUA)
 // ===============================
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJETO"
+  apiKey: "AIzaSyDXoK2h28eCwqATf5GyOYusK3BSVaBjUg8",
+  authDomain: "betting-scanner.firebaseapp.com",
+  projectId: "betting-scanner",
 };
 
 firebase.initializeApp(firebaseConfig);
