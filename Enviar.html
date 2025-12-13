@@ -1,56 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Enviar - Jogos & ODDs</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogos Filtrados</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <h1>Enviar / Importar</h1>
-    <a href="index.html" class="tertiary">Voltar</a>
-  </header>
-  <main class="container">
-    <section>
-      <h2>Colar texto (alternativa)</h2>
-      <textarea id="paste-alt" placeholder="Cole aqui e clique Processar"></textarea>
-      <div class="modal-actions">
-        <button id="process-alt" class="primary">Processar</button>
-        <button id="save-alt" class="secondary">Salvar encontrados</button>
-      </div>
-      <div id="alt-status"></div>
-    </section>
-    <section>
-      <h2>Importar JSON de backup</h2>
-      <input type="file" id="import-file" accept=".json" />
-    </section>
-  </main>
 
-  <script>
-    document.getElementById('process-alt').addEventListener('click', () => {
-      const txt = document.getElementById('paste-alt').value;
-      localStorage.setItem('_last_paste', txt);
-      alert('Texto salvo localmente. Volte para Home e abra Inserir Jogos para processar.');
-    });
-    document.getElementById('save-alt').addEventListener('click', async () => {
-      alert('Use o botão "Processar" acima para enviar ao Firestore pela Home.');
-    });
-    document.getElementById('import-file').addEventListener('change', ev => {
-      const f = ev.target.files[0];
-      if(!f) return;
-      const r = new FileReader();
-      r.onload = e => {
-        try{
-          const obj = JSON.parse(e.target.result);
-          localStorage.setItem('games', JSON.stringify(obj));
-          alert('Importado localmente com sucesso!');
-        }catch(err){
-          alert('JSON inválido.');
-        }
-      };
-      r.readAsText(f);
-    });
-  </script>
+<div class="overlay">
+
+  <div class="left">
+    <h2>Jogos Agora</h2>
+    <div id="liveGames"></div>
+  </div>
+
+  <div class="right">
+    <h2>Histórico</h2>
+    <div id="folders"></div>
+  </div>
+
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="close" onclick="closeModal()">X</div>
+    <h3 id="modalTitle"></h3>
+    <div id="modalGames"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
