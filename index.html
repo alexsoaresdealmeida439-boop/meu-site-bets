@@ -1,105 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Gerenciador de Jogos & ODDs</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogos Filtrados</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <h1>Jogos &amp; ODDs</h1>
-    <div class="controls">
-      <button id="btn-search" class="icon-btn" title="Pesquisar jogo">🔍</button>
-      <button id="btn-insert" class="primary">Inserir jogos</button>
-      <button id="btn-today" class="secondary">Jogos de hoje</button>
-      <button id="btn-export" class="tertiary">Exportar JSON</button>
-      <input id="file-import" type="file" accept=".json" style="display:none"/>
-    </div>
-  </header>
 
-  <main id="main">
-    <section id="home-list">
-      <p class="hint">Nenhum jogo selecionado. Use "Inserir jogos" para colar dados ou "Jogos de hoje".</p>
-    </section>
-    
-    <!-- Área de pastas boneca/marioresca -->
-    <section id="folders-section" class="folders-container hidden">
-      <div class="folders-nav">
-        <button class="folder-btn" data-folder="root">📁 Todos os Jogos</button>
-        <button class="folder-btn" data-folder="year">📁 Por Ano</button>
-        <button class="folder-btn" data-folder="month">📁 Por Mês</button>
-        <button class="folder-btn" data-folder="day">📁 Por Dia</button>
-      </div>
-      <div id="folders-content" class="folders-content"></div>
-    </section>
-  </main>
+<div class="overlay">
 
-  <!-- Modal: Inserir Jogos (30% central) -->
-  <div id="modal-insert" class="modal hidden">
-    <div class="modal-card modal-30">
-      <button class="close-btn" id="close-insert">✕</button>
-      <h2>Inserir jogos (cole o texto aqui)</h2>
-      <textarea id="paste-area" placeholder="Cole aqui o texto/numéro copiado pelo Google Lens..."></textarea>
-      <div class="modal-actions">
-        <button id="btn-process" class="primary">Processar</button>
-        <button id="btn-save" class="secondary">Salvar encontrados</button>
-      </div>
-      <div id="process-status" class="status"></div>
-      <div id="process-result" class="result"></div>
-    </div>
+  <div class="left">
+    <h2>Jogos Agora</h2>
+    <div id="liveGames"></div>
   </div>
 
-  <!-- Modal: Preview Jogos Escaneados (80% area) -->
-  <div id="modal-preview" class="modal hidden">
-    <div class="modal-card modal-80">
-      <button class="close-btn red" id="close-preview">✕</button>
-      <h2>Jogos Identificados - Revise antes de salvar</h2>
-      <div id="preview-list" class="preview-container"></div>
-      <div class="modal-actions">
-        <button id="btn-confirm-save" class="primary">Confirmar e Salvar</button>
-        <button id="btn-cancel-preview" class="secondary">Cancelar</button>
-      </div>
-    </div>
+  <div class="right">
+    <h2>Histórico</h2>
+    <div id="folders"></div>
   </div>
 
-  <!-- Modal: Ver mais jogos (80% area) -->
-  <div id="modal-more" class="modal hidden">
-    <div class="modal-card modal-80">
-      <button class="close-btn red" id="close-more">✕</button>
-      <h2>Todos os Jogos em Andamento</h2>
-      <div id="more-list" class="games-container"></div>
-    </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="close" onclick="closeModal()">X</div>
+    <h3 id="modalTitle"></h3>
+    <div id="modalGames"></div>
   </div>
+</div>
 
-  <!-- Modal: Buscar (10% area) -->
-  <div id="modal-search" class="modal hidden">
-    <div class="modal-card modal-10">
-      <button class="close-btn red" id="close-search">✕</button>
-      <input id="search-input" placeholder="Pesquisar jogo (nome / time)..." />
-      <div id="search-result"></div>
-    </div>
-  </div>
-
-  <!-- Not found list modal small -->
-  <div id="modal-notfound" class="modal hidden">
-    <div class="modal-card small">
-      <button class="close-btn" id="close-notfound">✕</button>
-      <h3>Jogos não encontrados</h3>
-      <ul id="notfound-list"></ul>
-    </div>
-  </div>
-
-  <!-- Context Menu para Editar/Apagar -->
-  <div id="context-menu" class="context-menu hidden">
-    <button class="context-btn" id="btn-edit-game">✏️ Editar</button>
-    <button class="context-btn delete" id="btn-delete-game">🗑️ Apagar</button>
-  </div>
-
-  <footer class="footer">
-    <small>Simulação de armazenamento em pastas (anos / meses / dias). Use Exportar para persistir.</small>
-  </footer>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
